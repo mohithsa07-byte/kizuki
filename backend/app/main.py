@@ -1,12 +1,12 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routes import health, regions
+from app.routes import climate, health, regions
 
 app = FastAPI(
     title="KIZUKI API",
     description="Climate intelligence API for KIZUKI.",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(regions.router)
+app.include_router(climate.router)
 
 
 @app.get("/")
