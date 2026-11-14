@@ -1,9 +1,7 @@
-﻿import { useMemo, useState } from 'react'
-import PageHeader from '../components/PageHeader'
+import { useMemo, useState } from 'react'
 import Card from '../components/Card'
 import SampleBadge from '../components/SampleBadge'
 import RealBadge from '../components/RealBadge'
-import StatCard from '../components/StatCard'
 import ClimateChart from '../charts/ClimateChart'
 import TrendChart from '../charts/TrendChart'
 import useApi from '../hooks/useApi'
@@ -12,7 +10,31 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const YEARS = Array.from({ length: 16 }, (_, i) => 2010 + i)
 
 const selectClass =
-  'rounded-lg border border-white/10 bg-navy-900 px-3 py-2 text-sm text-gray-200 outline-none focus:border-emerald-glow/50'
+  'rounded-lg border border-white/10 bg-navy-900/80 px-3 py-2 text-sm text-gray-200 outline-none focus:border-emerald-glow/50'
+
+const TONES = {
+  real: { line: 'from-emerald-glow to-teal-glow', tag: 'text-emerald-glow border-emerald-glow/30 bg-emerald-glow/10' },
+  sample: { line: 'from-amber-400 to-orange-400', tag: 'text-amber-300 border-amber-300/30 bg-amber-300/10' },
+  off: { line: 'from-gray-600 to-gray-500', tag: 'text-gray-400 border-white/10 bg-white/5' },
+}
+
+function KpiTile({ label, value, unit, note, tag, tone }) {
+  const t = TONES[tone]
+  return (
+    <div className="glass-panel relative overflow-hidden rounded-2xl p-5">
+      <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${t.line}`} />
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
+      <p className="mt-3 font-display text-4xl font-semibold text-white">
+        {value}
+        {unit && <span className="ml-1.5 text-base font-medium text-emerald-glow">{unit}</span>}
+      </p>
+      <p className="mt-1 text-sm text-gray-400">{note}</p>
+      <span className={`mt-4 inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${t.tag}`}>
+        {tag}
+      </span>
+    </div>
+  )
+}
 
 function mean(values) {
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
@@ -88,72 +110,51 @@ export default function Overview() {
   }
 
   const s = summary.data
-  const stats = [
-    {
-      id: 'temp',
-      label: 'Average temperature',
-      value: s && s.mean_temperature_c !== null ? String(s.mean_temperature_c) : 'N/A',
-      unit: '°C',
-      note: 'Air temperature (2 m)',
-      source: s ? 'NASA POWER' : 'Loading',
-    },
-    {
-      id: 'rain',
-      label: 'Annual rainfall',
-      value: s && s.mean_annual_rainfall_mm !== null ? String(s.mean_annual_rainfall_mm) : 'N/A',
-      unit: 'mm',
-      note: 'Mean total per year',
-      source: s ? 'NASA POWER' : 'Loading',
-    },
-    { id: 'ndvi', label: 'Vegetation index', value: '0.42', unit: 'NDVI', note: 'Greenness, not tree count', source: 'Sample' },
-    { id: 'aqi', label: 'Air quality', value: 'N/A', unit: '', note: 'No reliable source connected yet', source: 'Not connected' },
-  ]
+  const tempValue = s && s.mean_temperature_c !== null ? String(s.mean_temperature_c) : 'N/A'
+  const rainValue = s && s.mean_annual_rainfall_mm !== null ? String(s.mean_annual_rainfall_mm) : 'N/A'
 
   return (
-    <div>
-      <PageHeader
-        title="Overview"
-        description="Temperature and rainfall come from NASA POWER. Vegetation is still sample data."
-        sample={false}
-      />
-
-      <div className="mb-6 flex flex-wrap gap-3">
-        <div className="text-xs text-gray-400">
-          Region
-          <div className={`${selectClass} mt-1`}>Bengaluru Urban</div>
+    <div className="space-y-4">
+      <section className="glass-panel-strong relative overflow-hidden rounded-3xl p-6 sm:p-8">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-emerald-glow/20 blur-3xl" />
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-glow">Bengaluru Urban · Karnataka, India</p>
+        <h1 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">Climate overview</h1>
+        <p className="mt-2 max-w-2xl text-sm text-gray-400">
+          Temperature and rainfall come from NASA POWER, a gridded model product at about 50 km resolution. Vegetation is still sample data.
+        </p>
+        <div className="mt-6 flex flex-wrap items-end gap-3">
+          <label className="text-xs text-gray-400">
+            From year
+            <select className={`${selectClass} mt-1 block`} value={startYear} onChange={(e) => changeStart(Number(e.target.value))}>
+              {YEARS.map((y) => <option key={y}>{y}</option>)}
+            </select>
+          </label>
+          <label className="text-xs text-gray-400">
+            To year
+            <select className={`${selectClass} mt-1 block`} value={endYear} onChange={(e) => changeEnd(Number(e.target.value))}>
+              {YEARS.map((y) => <option key={y}>{y}</option>)}
+            </select>
+          </label>
+          <span className="pb-2 text-xs text-gray-500">{loading && !error ? 'Loading from NASA POWER...' : `Period: ${startYear} to ${endYear}`}</span>
         </div>
-        <label className="text-xs text-gray-400">
-          From year
-          <select className={`${selectClass} mt-1 block`} value={startYear} onChange={(e) => changeStart(Number(e.target.value))}>
-            {YEARS.map((y) => <option key={y}>{y}</option>)}
-          </select>
-        </label>
-        <label className="text-xs text-gray-400">
-          To year
-          <select className={`${selectClass} mt-1 block`} value={endYear} onChange={(e) => changeEnd(Number(e.target.value))}>
-            {YEARS.map((y) => <option key={y}>{y}</option>)}
-          </select>
-        </label>
-      </div>
+      </section>
 
       {error && (
-        <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/5 p-4 text-sm text-red-200">
+        <div className="rounded-xl border border-red-400/30 bg-red-400/5 p-4 text-sm text-red-200">
           Could not load climate data: {error}
-        </div>
-      )}
-      {loading && !error && (
-        <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm text-gray-400">
-          Loading data from NASA POWER...
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => <StatCard key={stat.id} {...stat} />)}
+        <KpiTile label="Average temperature" value={tempValue} unit="°C" note="Air temperature (2 m)" tag={s ? 'NASA POWER' : 'Loading'} tone={s ? 'real' : 'off'} />
+        <KpiTile label="Annual rainfall" value={rainValue} unit="mm" note="Mean total per year" tag={s ? 'NASA POWER' : 'Loading'} tone={s ? 'real' : 'off'} />
+        <KpiTile label="Vegetation index" value="0.42" unit="NDVI" note="Greenness, not tree count" tag="Sample" tone="sample" />
+        <KpiTile label="Air quality" value="N/A" unit="" note="No reliable source connected yet" tag="Not connected" tone="off" />
       </div>
 
       {charts && !error && (
         <>
-          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-2">
             <Card
               title="Average monthly temperature and rainfall"
               subtitle={`Mean of each calendar month, ${startYear} to ${endYear}`}
@@ -170,7 +171,7 @@ export default function Overview() {
             </Card>
           </div>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card title="Environmental insights" subtitle="Calculated from the data above" action={<RealBadge />}>
               {insights.length > 0 ? (
                 <ul className="space-y-3">
