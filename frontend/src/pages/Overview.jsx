@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip, ZoomControl } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Tooltip, ZoomControl, useMapEvents } from 'react-leaflet'
 import ClimateChart from '../charts/ClimateChart'
 import TrendChart from '../charts/TrendChart'
 import useApi from '../hooks/useApi'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const YEARS = Array.from({ length: 16 }, (_, i) => 2010 + i)
-const CENTER = [12.9716, 77.5946]
 
 const BASEMAPS = {
   dark: {
@@ -19,12 +18,13 @@ const BASEMAPS = {
     label: 'Satellite imagery',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Tiles &copy; Esri',
+    className: '',
   },
 }
 
 // Legend scale: fixed range so colours mean the same thing every time.
-const SCALE_MIN = 18
-const SCALE_MAX = 32
+const SCALE_MIN = -10
+const SCALE_MAX = 35
 const STOPS = ['#1d4ed8', '#2dd4bf', '#34d399', '#facc15', '#f97316', '#ef4444']
 
 function hexToRgb(hex) {
@@ -42,6 +42,10 @@ function tempColor(value) {
   const b = hexToRgb(STOPS[i + 1])
   const mix = a.map((v, k) => Math.round(v + (b[k] - v) * f))
   return `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`
+}
+
+function wrapLng(lng) {
+  return ((((lng + 180) % 360) + 360) % 360) - 180
 }
 
 function mean(values) {
@@ -144,17 +148,34 @@ function LayerRow({ label, hint, checked, onChange, disabled, tag, tone }) {
   )
 }
 
+function ClickHandler({ onPick }) {
+  useMapEvents({
+    click(e) {
+      onPick(e.latlng.lat, wrapLng(e.latlng.lng))
+    },
+  })
+  return null
+}
+
 const selectClass =
   'rounded-md border border-white/10 bg-navy-900/90 px-2 py-1 text-xs text-gray-200 outline-none focus:border-emerald-glow/50'
+
+const DEFAULT_SELECTION = { type: 'region', id: 'bengaluru-urban', name: 'Bengaluru', lat: 12.9716, lng: 77.5946 }
 
 export default function Overview() {
   const [startYear, setStartYear] = useState(2016)
   const [endYear, setEndYear] = useState(2023)
   const [basemap, setBasemap] = useState('dark')
-  const [showCell, setShowCell] = useState(true)
-  const regionId = 'bengaluru-urban'
+  const [showMarkers, setShowMarkers] = useState(true)
+  const [selection, setSelection] = useState(DEFAULT_SELECTION)
 
-  const query = `region_id=${regionId}&start_year=${startYear}&end_year=${endYear}`
+  const regions = useApi('/api/regions')
+
+  const place =
+    selection.type === 'region'
+      ? `region_id=${selection.id}`
+      : `lat=${selection.lat.toFixed(4)}&lng=${selection.lng.toFixed(4)}`
+  const query = `${place}&start_year=${startYear}&end_year=${endYear}`
   const summary = useApi(`/api/climate/summary?${query}`)
   const series = useApi(`/api/climate/timeseries?${query}`)
 
@@ -176,45 +197,75 @@ export default function Overview() {
     if (value < startYear) setStartYear(value)
   }
 
+  function pickPoint(lat, lng) {
+    setSelection({
+      type: 'point',
+      name: `Point ${lat.toFixed(2)}, ${lng.toFixed(2)}`,
+      lat,
+      lng,
+    })
+  }
+  function pickRegion(r) {
+    setSelection({ type: 'region', id: r.id, name: r.name, lat: r.lat, lng: r.lng })
+  }
+
   const s = summary.data
   const temp = s && s.mean_temperature_c !== null ? s.mean_temperature_c : null
   const rain = s && s.mean_annual_rainfall_mm !== null ? s.mean_annual_rainfall_mm : null
-  const cellColor = tempColor(temp)
+  const selectedColor = tempColor(temp)
   const base = BASEMAPS[basemap]
+  const cityList = regions.data || []
 
   const trackLeft = ((startYear - YEARS[0]) / (YEARS.length - 1)) * 100
   const trackWidth = Math.max(2, ((endYear - startYear) / (YEARS.length - 1)) * 100)
-  const markerLeft = ((startYear - YEARS[0]) / (YEARS.length - 1)) * 100
 
   return (
     <div className="absolute inset-0">
-      <MapContainer center={CENTER} zoom={8} zoomControl={false} className="h-full w-full" style={{ background: '#060b16' }}>
-        <TileLayer key={basemap} url={base.url} attribution={base.attribution} className={base.className} />
+      <MapContainer
+        center={[20, 10]}
+        zoom={2}
+        minZoom={2}
+        maxBounds={[[-85, -180], [85, 180]]}
+        maxBoundsViscosity={1}
+        zoomControl={false}
+        className="h-full w-full"
+        style={{ background: '#060b16' }}
+      >
+        <TileLayer key={basemap} url={base.url} attribution={base.attribution} className={base.className} noWrap />
         <ZoomControl position="bottomright" />
-        {showCell && (
-          <Circle
-            center={CENTER}
-            radius={25000}
-            pathOptions={{ color: cellColor, fillColor: cellColor, fillOpacity: 0.35, weight: 2 }}
-          >
-            <Tooltip sticky>
-              Bengaluru Urban · approximate NASA POWER grid cell
-              {temp !== null ? ` · ${temp} °C mean air temperature` : ''}
-            </Tooltip>
-          </Circle>
-        )}
-        <CircleMarker center={CENTER} radius={6} pathOptions={{ color: '#ffffff', fillColor: '#34d399', fillOpacity: 1, weight: 2 }}>
-          <Tooltip>Bengaluru Urban (query point)</Tooltip>
+        <ClickHandler onPick={pickPoint} />
+
+        {showMarkers &&
+          cityList.map((r) => (
+            <CircleMarker
+              key={r.id}
+              center={[r.lat, r.lng]}
+              radius={5}
+              pathOptions={{ color: '#ffffff', fillColor: '#94a3b8', fillOpacity: 0.9, weight: 1 }}
+              eventHandlers={{ click: (e) => { e.originalEvent.stopPropagation(); pickRegion(r) } }}
+            >
+              <Tooltip>{r.name}{r.country ? `, ${r.country}` : ''}</Tooltip>
+            </CircleMarker>
+          ))}
+
+        <CircleMarker
+          center={[selection.lat, selection.lng]}
+          radius={11}
+          pathOptions={{ color: '#ffffff', fillColor: selectedColor, fillOpacity: 0.9, weight: 2 }}
+        >
+          <Tooltip>
+            {selection.name}
+            {temp !== null ? ` · ${temp} °C mean air temperature` : ''}
+          </Tooltip>
         </CircleMarker>
       </MapContainer>
 
       {/* Floating panels */}
       <div className="pointer-events-none absolute inset-0 z-[1000] flex flex-col gap-3 p-3">
-        {/* KPI strip */}
         <div className="glass-panel-strong pointer-events-auto flex max-w-3xl divide-x divide-white/10 self-start overflow-hidden rounded-2xl">
           <Kpi label="Avg temperature" value={temp !== null ? temp : s ? 'N/A' : '...'} unit="°C" tag={s ? 'NASA POWER' : 'Loading'} tone={s ? 'real' : 'off'} />
           <Kpi label="Annual rainfall" value={rain !== null ? rain : s ? 'N/A' : '...'} unit="mm" tag={s ? 'NASA POWER' : 'Loading'} tone={s ? 'real' : 'off'} />
-          <Kpi label="Vegetation (NDVI)" value="0.42" unit="" tag="Sample" tone="sample" />
+          <Kpi label="Vegetation (NDVI)" value="N/A" unit="" tag="Not connected" tone="off" />
           <Kpi label="Air quality" value="N/A" unit="" tag="Not connected" tone="off" />
         </div>
 
@@ -225,12 +276,21 @@ export default function Overview() {
         )}
 
         <div className="flex min-h-0 flex-1 justify-between gap-3">
-          {/* Left: region and analytics */}
+          {/* Left: selected place and analytics */}
           <aside className="glass-panel pointer-events-auto hidden w-[340px] shrink-0 flex-col overflow-hidden rounded-2xl lg:flex">
             <div className="border-b border-white/10 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-glow">Region</p>
-              <h1 className="mt-1 font-display text-xl font-semibold text-white">Bengaluru Urban</h1>
-              <p className="text-xs text-gray-400">Karnataka, India · {startYear} to {endYear}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-glow">
+                {selection.type === 'region' ? 'City' : 'Clicked point'}
+              </p>
+              <h1 className="mt-1 font-display text-xl font-semibold text-white">{selection.name}</h1>
+              <p className="text-xs text-gray-400">
+                {selection.lat.toFixed(2)}, {selection.lng.toFixed(2)} · {startYear} to {endYear}
+              </p>
+              {s && s.grid_lat !== null && s.grid_lat !== undefined && (
+                <p className="mt-1 text-[11px] text-gray-500">
+                  Data is for the grid cell centred near {s.grid_lat}, {s.grid_lng}.
+                </p>
+              )}
             </div>
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
               {loading && !error && <p className="text-sm text-gray-400">Loading from NASA POWER...</p>}
@@ -270,10 +330,11 @@ export default function Overview() {
             </div>
           </aside>
 
-          {/* Right: layers and data */}
+          {/* Right: layers, cities and notes */}
           <aside className="glass-panel pointer-events-auto hidden w-[300px] shrink-0 flex-col overflow-hidden rounded-2xl xl:flex">
             <div className="border-b border-white/10 p-4">
               <h2 className="font-display text-base font-semibold text-white">Map layers and data</h2>
+              <p className="mt-1 text-[11px] text-gray-500">Click anywhere on the map to load that place.</p>
             </div>
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
               <section>
@@ -293,20 +354,41 @@ export default function Overview() {
                   ))}
                 </div>
               </section>
+
+              <section>
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Cities</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {cityList.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => pickRegion(r)}
+                      className={`truncate rounded-md border px-2 py-1.5 text-left text-xs transition ${
+                        selection.type === 'region' && selection.id === r.id
+                          ? 'border-emerald-glow/40 bg-emerald-glow/10 text-emerald-glow'
+                          : 'border-white/10 text-gray-300 hover:border-white/20'
+                      }`}
+                    >
+                      {r.name}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
               <section className="space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Data layers</p>
-                <LayerRow label="Air temperature (grid cell)" hint="NASA POWER T2M, about 50 km cell" checked={showCell} onChange={setShowCell} />
+                <LayerRow label="City markers" hint="Starter set of world cities" checked={showMarkers} onChange={setShowMarkers} />
                 <LayerRow label="Vegetation (NDVI)" hint="Needs Sentinel-2 processing" disabled tag="Not connected" tone="off" />
                 <LayerRow label="Land surface temperature" hint="Satellite LST, different from air temperature" disabled tag="Not connected" tone="off" />
                 <LayerRow label="Air quality" hint="No reliable source yet" disabled tag="Not connected" tone="off" />
               </section>
+
               <section>
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">About this data</p>
                 <ul className="space-y-2 text-xs text-gray-400">
-                  <li>Values come from a gridded model product, not a weather station. City-scale differences are not resolved.</li>
+                  <li>{s ? s.grid_note : 'NASA POWER data is gridded at about 50 km.'}</li>
                   <li>{s ? s.temperature_note : 'Air temperature at 2 m from NASA POWER.'}</li>
-                  <li>The circle on the map is an approximate cell outline. It is not a measured boundary.</li>
-                  <li>The NDVI value above is sample data.</li>
+                  <li>Ocean points also return values. They describe the model grid, not a measurement at sea.</li>
                 </ul>
               </section>
             </div>
@@ -341,10 +423,6 @@ export default function Overview() {
                 <div
                   className="absolute top-0 h-2 rounded-full bg-gradient-to-r from-emerald-glow to-teal-glow"
                   style={{ left: `${trackLeft}%`, width: `${Math.min(trackWidth, 100 - trackLeft)}%` }}
-                />
-                <div
-                  className="absolute -top-1 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-emerald-glow"
-                  style={{ left: `${markerLeft}%` }}
                 />
               </div>
               <div className="mt-1 flex justify-between text-[10px] text-gray-500">
