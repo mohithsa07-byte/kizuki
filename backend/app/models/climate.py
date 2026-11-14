@@ -1,4 +1,4 @@
-﻿from pydantic import BaseModel
+from pydantic import BaseModel
 
 
 class TimeseriesPoint(BaseModel):
@@ -7,8 +7,17 @@ class TimeseriesPoint(BaseModel):
     rainfall_mm: float | None
 
 
-class TimeseriesResponse(BaseModel):
-    region_id: str
+class LocationInfo(BaseModel):
+    region_id: str | None = None
+    location_type: str  # "region" or "point"
+    lat: float
+    lng: float
+    grid_lat: float | None = None
+    grid_lng: float | None = None
+    grid_note: str
+
+
+class TimeseriesResponse(LocationInfo):
     start_year: int
     end_year: int
     frequency: str
@@ -18,8 +27,7 @@ class TimeseriesResponse(BaseModel):
     points: list[TimeseriesPoint]
 
 
-class SummaryResponse(BaseModel):
-    region_id: str
+class SummaryResponse(LocationInfo):
     start_year: int
     end_year: int
     mean_temperature_c: float | None

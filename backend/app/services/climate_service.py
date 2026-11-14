@@ -1,23 +1,41 @@
-﻿import calendar
+import calendar
 from functools import lru_cache
 
 import httpx
 
 POWER_URL = "https://power.larc.nasa.gov/api/temporal/monthly/point"
-SOURCE = "NASA POWER (monthly, point query at region centre)"
+SOURCE = "NASA POWER (monthly, point query)"
 IS_SAMPLE = False
 TEMPERATURE_NOTE = (
     "Air temperature at 2 m (T2M) from NASA POWER. "
     "Not the same as satellite land surface temperature."
 )
+GRID_NOTE = (
+    "NASA POWER data is gridded at roughly 0.5 x 0.625 degrees (about 50 km). "
+    "The value describes the whole cell, not the exact point, and cannot resolve "
+    "city-scale, coastal or mountain differences."
+)
 MISSING_VALUE = -999
+
+GRID_LAT_STEP = 0.5
+GRID_LNG_STEP = 0.625
 
 
 class DataSourceError(Exception):
     """Raised when NASA POWER cannot be reached or returns something unexpected."""
 
 
-@lru_cache(maxsize=64)
+def snap_to_grid(lat: float, lng: float) -> tuple[float, float]:
+    """Snap a point to the centre of the nominal NASA POWER grid cell."""
+    grid_lat = round(lat / GRID_LAT_STEP) * GRID_LAT_STEP
+    grid_lat = max(-90.0, min(90.0, grid_lat))
+    grid_lng = round((lng + 180) / GRID_LNG_STEP) * GRID_LNG_STEP - 180
+    if grid_lng > 180:
+        grid_lng -= 360
+    return round(grid_lat, 4), round(grid_lng, 4)
+
+
+@lru_cache(maxsize=256)
 def _fetch_power(lat: float, lng: float, start_year: int, end_year: int) -> dict:
     params = {
         "parameters": "T2M,PRECTOTCORR",
