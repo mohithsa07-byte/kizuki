@@ -7,14 +7,6 @@
         "lat": 12.9716,
         "lng": 77.5946,
     },
-    {
-        "id": "bengaluru-rural",
-        "name": "Bengaluru Rural",
-        "state": "Karnataka",
-        "country": "India",
-        "lat": 13.2257,
-        "lng": 77.5750,
-    },
 ]
 
 
