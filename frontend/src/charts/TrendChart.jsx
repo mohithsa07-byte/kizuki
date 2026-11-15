@@ -1,22 +1,81 @@
-﻿import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from 'recharts'
+
+const muted = '#94a6a8'
+const grid = '#35444b'
+const copper = '#c58b6d'
 
 export default function TrendChart({ data }) {
   return (
     <div className="h-72 w-full">
-      <ResponsiveContainer>
-        <AreaChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-          <defs>
-            <linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#34d399" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="#ffffff10" vertical={false} />
-          <XAxis dataKey="year" stroke="#6b7280" fontSize={12} tickLine={false} />
-          <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} domain={['dataMin - 0.3', 'dataMax + 0.3']} />
-          <Tooltip contentStyle={{ background: '#0a1220', border: '1px solid #ffffff15', borderRadius: 12 }} />
-          <Area dataKey="temp" name="Mean temp (°C)" stroke="#34d399" strokeWidth={2.5} fill="url(#tempFill)" />
-        </AreaChart>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={data}
+          margin={{ top: 18, right: 20, left: 0, bottom: 10 }}
+        >
+          <CartesianGrid
+            stroke={grid}
+            strokeWidth={0.6}
+            vertical={false}
+          />
+
+          <XAxis
+            dataKey="year"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: muted, fontSize: 10 }}
+            tickMargin={12}
+            minTickGap={22}
+          />
+
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: muted, fontSize: 10 }}
+            tickFormatter={value => `${value}°`}
+            domain={['dataMin - 0.3', 'dataMax + 0.3']}
+            width={45}
+          />
+
+          <Tooltip
+            contentStyle={{
+              backgroundColor: '#19262d',
+              border: '1px solid #405157',
+              borderRadius: 6,
+              boxShadow: 'none',
+              fontFamily: 'IBM Plex Mono, monospace',
+              fontSize: 11
+            }}
+            labelStyle={{ color: '#e0e8e7' }}
+            cursor={{
+              stroke: '#6e8589',
+              strokeDasharray: '3 4'
+            }}
+            formatter={value => [
+              `${Number(value).toFixed(2)} °C`,
+              'Mean temperature'
+            ]}
+          />
+
+          <Line
+            type="linear"
+            dataKey="temp"
+            name="Mean temperature"
+            stroke={copper}
+            strokeWidth={1.8}
+            dot={false}
+            activeDot={{ r: 3 }}
+            connectNulls={false}
+            isAnimationActive={false}
+          />
+        </LineChart>
       </ResponsiveContainer>
     </div>
   )
