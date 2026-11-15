@@ -30,7 +30,7 @@ export default function Vegetation() {
 
       <EarthTimeMachine location={location} />
 
-      <GlobalNDVI />
+      <GlobalNDVI location={location} />
     </div>
   )
 }

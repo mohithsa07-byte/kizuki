@@ -1,15 +1,23 @@
-﻿import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Satellite, Leaf, AlertCircle } from 'lucide-react'
 
 const API = 'https://kizuki-eta.vercel.app/api'
 
-export default function GlobalNDVI() {
+export default function GlobalNDVI({ location }) {
   const [lat, setLat] = useState('12.9716')
   const [lng, setLng] = useState('77.5946')
   const [year, setYear] = useState('2024')
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    if (!location) return
+    setLat(String(location.lat))
+    setLng(String(location.lng))
+    setData(null)
+    setError('')
+  }, [location?.lat, location?.lng])
+
 
   async function analyze() {
     setLoading(true)
