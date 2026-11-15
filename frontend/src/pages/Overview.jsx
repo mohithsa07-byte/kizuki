@@ -1,181 +1,230 @@
-import { useMemo, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Tooltip, ZoomControl, useMapEvents } from 'react-leaflet'
+
+import { useMemo, useState, useEffect } from 'react'
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Tooltip,
+  ZoomControl,
+  useMap,
+  useMapEvents,
+} from 'react-leaflet'
 import ClimateChart from '../charts/ClimateChart'
 import TrendChart from '../charts/TrendChart'
 import useApi from '../hooks/useApi'
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const YEARS = Array.from({ length: 16 }, (_, i) => 2010 + i)
+
+const DEFAULT_SELECTION = {
+  type: 'region',
+  id: 'bengaluru-urban',
+  name: 'Bengaluru',
+  lat: 12.9716,
+  lng: 77.5946,
+}
 
 const BASEMAPS = {
   dark: {
-    label: 'Dark map',
+    label: 'Dark',
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors',
     className: 'osm-dark',
   },
   satellite: {
-    label: 'Satellite imagery',
+    label: 'Satellite',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Tiles &copy; Esri',
     className: '',
   },
 }
 
-// Legend scale: fixed range so colours mean the same thing every time.
-const SCALE_MIN = -10
-const SCALE_MAX = 35
-const STOPS = ['#1d4ed8', '#2dd4bf', '#34d399', '#facc15', '#f97316', '#ef4444']
-
-function hexToRgb(hex) {
-  const n = parseInt(hex.slice(1), 16)
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-}
-
-function tempColor(value) {
-  if (value === null || value === undefined) return '#94a3b8'
-  const norm = Math.min(1, Math.max(0, (value - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)))
-  const pos = norm * (STOPS.length - 1)
-  const i = Math.min(STOPS.length - 2, Math.floor(pos))
-  const f = pos - i
-  const a = hexToRgb(STOPS[i])
-  const b = hexToRgb(STOPS[i + 1])
-  const mix = a.map((v, k) => Math.round(v + (b[k] - v) * f))
-  return `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`
-}
-
-function wrapLng(lng) {
-  return ((((lng + 180) % 360) + 360) % 360) - 180
-}
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+]
 
 function mean(values) {
-  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
+  return values.length
+    ? values.reduce((total, value) => total + value, 0) / values.length
+    : null
 }
 
-function buildCharts(points) {
-  const monthly = MONTHS.map((month, i) => {
-    const rows = points.filter((p) => Number(p.date.slice(5)) === i + 1)
-    const temp = mean(rows.filter((r) => r.temperature_c !== null).map((r) => r.temperature_c))
-    const rain = mean(rows.filter((r) => r.rainfall_mm !== null).map((r) => r.rainfall_mm))
+function buildCharts(points = []) {
+  const monthly = MONTHS.map((month, index) => {
+    const rows = points.filter(
+      (point) => Number(point.date.slice(5)) === index + 1,
+    )
+
+    const temperatures = rows
+      .filter((row) => row.temperature_c !== null)
+      .map((row) => row.temperature_c)
+
+    const rainfall = rows
+      .filter((row) => row.rainfall_mm !== null)
+      .map((row) => row.rainfall_mm)
+
+    const temperature = mean(temperatures)
+    const rain = mean(rainfall)
+
     return {
       month,
-      temp: temp === null ? null : Number(temp.toFixed(2)),
+      temp: temperature === null ? null : Number(temperature.toFixed(2)),
       rain: rain === null ? null : Number(rain.toFixed(1)),
     }
   })
 
   const byYear = {}
-  points.forEach((p) => {
-    const year = p.date.slice(0, 4)
+
+  points.forEach((point) => {
+    const year = point.date.slice(0, 4)
     byYear[year] = byYear[year] || []
-    if (p.temperature_c !== null) byYear[year].push(p.temperature_c)
+
+    if (point.temperature_c !== null) {
+      byYear[year].push(point.temperature_c)
+    }
   })
-  // Only complete years (12 valid months) are used for the yearly mean.
+
   const yearly = Object.entries(byYear)
-    .filter(([, temps]) => temps.length === 12)
-    .map(([year, temps]) => ({ year: Number(year), temp: Number(mean(temps).toFixed(2)) }))
+    .filter(([, values]) => values.length === 12)
+    .map(([year, values]) => ({
+      year: Number(year),
+      temp: Number(mean(values).toFixed(2)),
+    }))
 
   return { monthly, yearly }
 }
 
 function buildInsights(monthly) {
-  const withTemp = monthly.filter((m) => m.temp !== null)
-  const withRain = monthly.filter((m) => m.rain !== null)
+  const temperatures = monthly.filter((item) => item.temp !== null)
+  const rainfall = monthly.filter((item) => item.rain !== null)
   const insights = []
-  if (withTemp.length) {
-    const hottest = withTemp.reduce((a, b) => (b.temp > a.temp ? b : a))
-    const coolest = withTemp.reduce((a, b) => (b.temp < a.temp ? b : a))
-    insights.push(`Hottest month on average: ${hottest.month} (${hottest.temp} °C). Coolest: ${coolest.month} (${coolest.temp} °C).`)
+
+  if (temperatures.length) {
+    const hottest = temperatures.reduce((a, b) =>
+      b.temp > a.temp ? b : a,
+    )
+    const coolest = temperatures.reduce((a, b) =>
+      b.temp < a.temp ? b : a,
+    )
+
+    insights.push({
+      title: 'Temperature pattern',
+      description: `${hottest.month} is the warmest month on average at ${hottest.temp} °C. ${coolest.month} is the coolest at ${coolest.temp} °C.`,
+    })
   }
-  if (withRain.length) {
-    const wettest = withRain.reduce((a, b) => (b.rain > a.rain ? b : a))
-    insights.push(`Wettest month on average: ${wettest.month} (${wettest.rain} mm).`)
+
+  if (rainfall.length) {
+    const wettest = rainfall.reduce((a, b) =>
+      b.rain > a.rain ? b : a,
+    )
+
+    insights.push({
+      title: 'Rainfall pattern',
+      description: `${wettest.month} receives the highest average monthly rainfall at ${wettest.rain} mm.`,
+    })
   }
+
   return insights
 }
 
-const TONES = {
-  real: 'text-emerald-glow border-emerald-glow/30 bg-emerald-glow/10',
-  sample: 'text-amber-300 border-amber-300/30 bg-amber-300/10',
-  off: 'text-gray-400 border-white/10 bg-white/5',
+function MapClickHandler({ onPick }) {
+  useMapEvents({
+    click(event) {
+      onPick(event.latlng.lat, event.latlng.lng)
+    },
+  })
+
+  return null
 }
 
-function Tag({ tone, children }) {
+function MapFocus({ selection }) {
+  const map = useMap()
+
+  useEffect(() => {
+    map.flyTo([selection.lat, selection.lng], 5, {
+      duration: 1.2,
+    })
+  }, [map, selection.lat, selection.lng])
+
+  return null
+}
+
+function StatusTag({ children, type = 'real' }) {
+  const styles = {
+    real: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300',
+    unavailable: 'border-white/10 bg-white/[0.04] text-slate-400',
+    warning: 'border-amber-400/20 bg-amber-400/10 text-amber-300',
+  }
+
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${TONES[tone]}`}>
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${styles[type]}`}
+    >
       {children}
     </span>
   )
 }
 
-function Kpi({ label, value, unit, tag, tone }) {
+function MetricCard({ label, value, unit, description, status }) {
   return (
-    <div className="min-w-0 flex-1 px-4 py-3">
-      <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-      <p className="mt-1 font-display text-2xl font-semibold text-white">
-        {value}
-        {unit && <span className="ml-1 text-sm font-medium text-emerald-glow">{unit}</span>}
-      </p>
-      <div className="mt-1.5"><Tag tone={tone}>{tag}</Tag></div>
+    <div className="group rounded-2xl border border-white/[0.08] bg-[#0c1724]/90 p-4 transition duration-300 hover:border-emerald-300/25 hover:bg-[#101e2d] sm:p-5">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          {label}
+        </p>
+        <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]" />
+      </div>
+
+      <div className="mt-4 flex items-baseline gap-1.5">
+        <span className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          {value}
+        </span>
+        {unit && (
+          <span className="text-sm font-medium text-emerald-300">{unit}</span>
+        )}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11px] text-slate-500">{description}</p>
+        <StatusTag type={status === 'NASA POWER' ? 'real' : 'unavailable'}>
+          {status}
+        </StatusTag>
+      </div>
     </div>
   )
 }
 
-function LayerRow({ label, hint, checked, onChange, disabled, tag, tone }) {
+function SectionHeading({ eyebrow, title, detail }) {
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => onChange && onChange(!checked)}
-      className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left transition ${
-        disabled
-          ? 'cursor-not-allowed border-white/5 bg-white/[0.02] opacity-70'
-          : checked
-            ? 'border-emerald-glow/40 bg-emerald-glow/10'
-            : 'border-white/10 bg-white/[0.03] hover:border-white/20'
-      }`}
-    >
-      <span className="min-w-0">
-        <span className="block text-sm font-medium text-gray-100">{label}</span>
-        {hint && <span className="block text-[11px] text-gray-500">{hint}</span>}
-      </span>
-      {tag ? (
-        <Tag tone={tone}>{tag}</Tag>
-      ) : (
-        <span className={`h-4 w-4 shrink-0 rounded-full border ${checked ? 'border-emerald-glow bg-emerald-glow' : 'border-gray-500'}`} />
-      )}
-    </button>
+    <div className="mb-4">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
+        {eyebrow}
+      </p>
+      <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
+        <h2 className="font-display text-lg font-semibold text-white sm:text-xl">
+          {title}
+        </h2>
+        {detail && <p className="text-xs text-slate-500">{detail}</p>}
+      </div>
+    </div>
   )
 }
-
-function ClickHandler({ onPick }) {
-  useMapEvents({
-    click(e) {
-      onPick(e.latlng.lat, wrapLng(e.latlng.lng))
-    },
-  })
-  return null
-}
-
-const selectClass =
-  'rounded-md border border-white/10 bg-navy-900/90 px-2 py-1 text-xs text-gray-200 outline-none focus:border-emerald-glow/50'
-
-const DEFAULT_SELECTION = { type: 'region', id: 'bengaluru-urban', name: 'Bengaluru', lat: 12.9716, lng: 77.5946 }
 
 export default function Overview() {
   const [startYear, setStartYear] = useState(2016)
   const [endYear, setEndYear] = useState(2023)
   const [basemap, setBasemap] = useState('dark')
-  const [showMarkers, setShowMarkers] = useState(true)
   const [selection, setSelection] = useState(DEFAULT_SELECTION)
 
   const regions = useApi('/api/regions')
 
-  const place =
+  const locationQuery =
     selection.type === 'region'
       ? `region_id=${selection.id}`
       : `lat=${selection.lat.toFixed(4)}&lng=${selection.lng.toFixed(4)}`
-  const query = `${place}&start_year=${startYear}&end_year=${endYear}`
+
+  const query = `${locationQuery}&start_year=${startYear}&end_year=${endYear}`
+
   const summary = useApi(`/api/climate/summary?${query}`)
   const series = useApi(`/api/climate/timeseries?${query}`)
 
@@ -183,15 +232,25 @@ export default function Overview() {
     () => (series.data ? buildCharts(series.data.points) : null),
     [series.data],
   )
-  const insights = charts ? buildInsights(charts.monthly) : []
 
+  const insights = charts ? buildInsights(charts.monthly) : []
   const loading = summary.loading || series.loading
   const error = summary.error || series.error
+
+  const summaryData = summary.data
+  const temperature =
+    summaryData?.mean_temperature_c ?? null
+  const rainfall =
+    summaryData?.mean_annual_rainfall_mm ?? null
+
+  const cityList = regions.data || []
+  const base = BASEMAPS[basemap]
 
   function changeStart(value) {
     setStartYear(value)
     if (value > endYear) setEndYear(value)
   }
+
   function changeEnd(value) {
     setEndYear(value)
     if (value < startYear) setStartYear(value)
@@ -200,238 +259,461 @@ export default function Overview() {
   function pickPoint(lat, lng) {
     setSelection({
       type: 'point',
-      name: `Point ${lat.toFixed(2)}, ${lng.toFixed(2)}`,
+      name: `Selected location`,
       lat,
       lng,
     })
   }
-  function pickRegion(r) {
-    setSelection({ type: 'region', id: r.id, name: r.name, lat: r.lat, lng: r.lng })
+
+  function pickRegion(region) {
+    setSelection({
+      type: 'region',
+      id: region.id,
+      name: region.name,
+      lat: region.lat,
+      lng: region.lng,
+    })
   }
 
-  const s = summary.data
-  const temp = s && s.mean_temperature_c !== null ? s.mean_temperature_c : null
-  const rain = s && s.mean_annual_rainfall_mm !== null ? s.mean_annual_rainfall_mm : null
-  const selectedColor = tempColor(temp)
-  const base = BASEMAPS[basemap]
-  const cityList = regions.data || []
-
-  const trackLeft = ((startYear - YEARS[0]) / (YEARS.length - 1)) * 100
-  const trackWidth = Math.max(2, ((endYear - startYear) / (YEARS.length - 1)) * 100)
-
   return (
-    <div className="absolute inset-0">
-      <MapContainer
-        center={[20, 10]}
-        zoom={2}
-        minZoom={2}
-        maxBounds={[[-85, -180], [85, 180]]}
-        maxBoundsViscosity={1}
-        zoomControl={false}
-        className="h-full w-full"
-        style={{ background: '#060b16' }}
-      >
-        <TileLayer key={basemap} url={base.url} attribution={base.attribution} className={base.className} noWrap />
-        <ZoomControl position="bottomright" />
-        <ClickHandler onPick={pickPoint} />
+    <div className="min-h-screen bg-[#07111c] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] space-y-6">
 
-        {showMarkers &&
-          cityList.map((r) => (
-            <CircleMarker
-              key={r.id}
-              center={[r.lat, r.lng]}
-              radius={5}
-              pathOptions={{ color: '#ffffff', fillColor: '#94a3b8', fillOpacity: 0.9, weight: 1 }}
-              eventHandlers={{ click: (e) => { e.originalEvent.stopPropagation(); pickRegion(r) } }}
-            >
-              <Tooltip>{r.name}{r.country ? `, ${r.country}` : ''}</Tooltip>
-            </CircleMarker>
-          ))}
+        {/* Dashboard heading */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#102638] via-[#0b1a28] to-[#09131e] p-6 sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-28 h-72 w-72 rounded-full bg-emerald-400/10 blur-[90px]" />
+          <div className="pointer-events-none absolute -bottom-32 right-1/3 h-64 w-64 rounded-full bg-teal-400/[0.08] blur-[90px]" />
 
-        <CircleMarker
-          center={[selection.lat, selection.lng]}
-          radius={11}
-          pathOptions={{ color: '#ffffff', fillColor: selectedColor, fillOpacity: 0.9, weight: 2 }}
-        >
-          <Tooltip>
-            {selection.name}
-            {temp !== null ? ` · ${temp} °C mean air temperature` : ''}
-          </Tooltip>
-        </CircleMarker>
-      </MapContainer>
+          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-300">
+                  Climate intelligence platform
+                </p>
+              </div>
 
-      {/* Floating panels */}
-      <div className="pointer-events-none absolute inset-0 z-[1000] flex flex-col gap-3 p-3">
-        <div className="glass-panel-strong pointer-events-auto flex max-w-3xl divide-x divide-white/10 self-start overflow-hidden rounded-2xl">
-          <Kpi label="Avg temperature" value={temp !== null ? temp : s ? 'N/A' : '...'} unit="°C" tag={s ? 'NASA POWER' : 'Loading'} tone={s ? 'real' : 'off'} />
-          <Kpi label="Annual rainfall" value={rain !== null ? rain : s ? 'N/A' : '...'} unit="mm" tag={s ? 'NASA POWER' : 'Loading'} tone={s ? 'real' : 'off'} />
-          <Kpi label="Vegetation (NDVI)" value="N/A" unit="" tag="Not connected" tone="off" />
-          <Kpi label="Air quality" value="N/A" unit="" tag="Not connected" tone="off" />
-        </div>
+              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                Understand our
+                <span className="block text-emerald-300">changing planet.</span>
+              </h1>
 
+              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">
+                Explore climate patterns, examine historical records and
+                discover what environmental data reveals about our world.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                <p className="text-[9px] uppercase tracking-[0.18em] text-slate-500">
+                  Selected region
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {selection.name}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/[0.07] px-4 py-3">
+                <p className="text-[9px] uppercase tracking-[0.18em] text-emerald-200/70">
+                  Data period
+                </p>
+                <p className="mt-1 text-sm font-semibold text-emerald-200">
+                  {startYear} — {endYear}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Error message */}
         {error && (
-          <div className="glass-panel-strong pointer-events-auto max-w-xl self-start rounded-xl border-red-400/30 p-3 text-sm text-red-200">
+          <div className="rounded-xl border border-red-400/20 bg-red-400/[0.07] p-4 text-sm text-red-200">
             Could not load climate data: {error}
           </div>
         )}
 
-        <div className="flex min-h-0 flex-1 justify-between gap-3">
-          {/* Left: selected place and analytics */}
-          <aside className="glass-panel pointer-events-auto hidden w-[340px] shrink-0 flex-col overflow-hidden rounded-2xl lg:flex">
-            <div className="border-b border-white/10 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-glow">
-                {selection.type === 'region' ? 'City' : 'Clicked point'}
+        {/* Main metrics */}
+        <section>
+          <SectionHeading
+            eyebrow="Environmental snapshot"
+            title="Climate at a glance"
+            detail={loading ? 'Updating data…' : 'Historical period average'}
+          />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Mean air temperature"
+              value={temperature !== null ? temperature : loading ? '…' : 'N/A'}
+              unit="°C"
+              description="Air temperature at 2 metres"
+              status={summaryData ? 'NASA POWER' : 'Unavailable'}
+            />
+
+            <MetricCard
+              label="Mean annual rainfall"
+              value={rainfall !== null ? rainfall : loading ? '…' : 'N/A'}
+              unit="mm"
+              description="Annualised precipitation"
+              status={summaryData ? 'NASA POWER' : 'Unavailable'}
+            />
+
+            <MetricCard
+              label="Vegetation index"
+              value="N/A"
+              description="Sentinel-2 processing required"
+              status="Not connected"
+            />
+
+            <MetricCard
+              label="Air quality index"
+              value="N/A"
+              description="Air quality source not connected"
+              status="Not connected"
+            />
+          </div>
+        </section>
+
+        {/* Map and region controls */}
+        <section>
+          <SectionHeading
+            eyebrow="Geospatial intelligence"
+            title="Explore the planet"
+            detail="Select a city or click anywhere on the map"
+          />
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="relative h-[380px] overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0b1723] sm:h-[480px]">
+              <MapContainer
+                center={[20, 10]}
+                zoom={2}
+                minZoom={2}
+                maxZoom={12}
+                zoomControl={false}
+                className="h-full w-full"
+                style={{ background: '#07111c' }}
+              >
+                <TileLayer
+                  key={basemap}
+                  url={base.url}
+                  attribution={base.attribution}
+                  className={base.className}
+                  noWrap
+                />
+
+                <ZoomControl position="bottomright" />
+                <MapClickHandler onPick={pickPoint} />
+                <MapFocus selection={selection} />
+
+                {cityList.map((region) => (
+                  <CircleMarker
+                    key={region.id}
+                    center={[region.lat, region.lng]}
+                    radius={selection.id === region.id ? 7 : 5}
+                    pathOptions={{
+                      color: '#d1fae5',
+                      fillColor: '#34d399',
+                      fillOpacity: 0.9,
+                      weight: 1,
+                    }}
+                    eventHandlers={{
+                      click: (event) => {
+                        event.originalEvent.stopPropagation()
+                        pickRegion(region)
+                      },
+                    }}
+                  >
+                    <Tooltip>
+                      {region.name}
+                      {region.country ? `, ${region.country}` : ''}
+                    </Tooltip>
+                  </CircleMarker>
+                ))}
+
+                <CircleMarker
+                  center={[selection.lat, selection.lng]}
+                  radius={10}
+                  pathOptions={{
+                    color: '#ffffff',
+                    fillColor: '#10b981',
+                    fillOpacity: 1,
+                    weight: 2,
+                  }}
+                >
+                  <Tooltip>{selection.name}</Tooltip>
+                </CircleMarker>
+              </MapContainer>
+
+              <div className="pointer-events-none absolute left-4 top-4 z-[500] rounded-xl border border-white/10 bg-[#081522]/90 px-3 py-2 backdrop-blur-xl">
+                <p className="text-[9px] uppercase tracking-[0.18em] text-slate-500">
+                  Active location
+                </p>
+                <p className="mt-0.5 text-sm font-semibold text-white">
+                  {selection.name}
+                </p>
+              </div>
+
+              <div className="absolute bottom-4 left-4 z-[500] flex gap-1 rounded-lg border border-white/10 bg-[#081522]/90 p-1 backdrop-blur-xl">
+                {Object.entries(BASEMAPS).map(([key, item]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setBasemap(key)}
+                    className={`rounded-md px-3 py-2 text-[10px] font-semibold transition ${
+                      basemap === key
+                        ? 'bg-emerald-400/15 text-emerald-300'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <aside className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+                Location controls
               </p>
-              <h1 className="mt-1 font-display text-xl font-semibold text-white">{selection.name}</h1>
-              <p className="text-xs text-gray-400">
-                {selection.lat.toFixed(2)}, {selection.lng.toFixed(2)} · {startYear} to {endYear}
+
+              <h3 className="mt-2 font-display text-lg font-semibold text-white">
+                Choose a region
+              </h3>
+
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Select a supported region to load its climate records.
               </p>
-              {s && s.grid_lat !== null && s.grid_lat !== undefined && (
-                <p className="mt-1 text-[11px] text-gray-500">
-                  Data is for the grid cell centred near {s.grid_lat}, {s.grid_lng}.
+
+              <div className="mt-5 space-y-2">
+                {cityList.length ? (
+                  cityList.map((region) => (
+                    <button
+                      key={region.id}
+                      type="button"
+                      onClick={() => pickRegion(region)}
+                      className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${
+                        selection.type === 'region' &&
+                        selection.id === region.id
+                          ? 'border-emerald-300/30 bg-emerald-300/[0.08] text-emerald-200'
+                          : 'border-white/[0.07] bg-white/[0.02] text-slate-300 hover:border-white/20 hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <span className="text-sm font-medium">{region.name}</span>
+                      <span className="text-xs opacity-60">↗</span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    Loading available regions…
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-6 border-t border-white/[0.08] pt-5">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Selected coordinates
+                </p>
+                <p className="mt-2 font-mono text-xs text-slate-300">
+                  {selection.lat.toFixed(4)}°, {selection.lng.toFixed(4)}°
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelection(DEFAULT_SELECTION)}
+                  className="mt-4 w-full rounded-lg border border-white/10 px-3 py-2.5 text-xs font-semibold text-slate-300 transition hover:border-emerald-300/30 hover:text-emerald-300"
+                >
+                  Reset to Bengaluru
+                </button>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        {/* Historical analytics */}
+        <section>
+          <SectionHeading
+            eyebrow="Historical climate records"
+            title="Patterns over time"
+            detail="Monthly averages and yearly trends"
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#0c1724] p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Monthly climate profile
+                  </h3>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Average temperature and rainfall by month
+                  </p>
+                </div>
+                <StatusTag>NASA POWER</StatusTag>
+              </div>
+
+              {loading && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  Loading climate records…
+                </p>
+              )}
+
+              {!loading && charts && (
+                <ClimateChart data={charts.monthly} />
+              )}
+
+              {!loading && !charts && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  No climate records available for this selection.
                 </p>
               )}
             </div>
-            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-              {loading && !error && <p className="text-sm text-gray-400">Loading from NASA POWER...</p>}
-              {charts && !error && (
-                <>
-                  <section>
-                    <div className="mb-2 flex items-center justify-between">
-                      <h2 className="text-sm font-semibold text-white">Monthly temperature and rainfall</h2>
-                      <Tag tone="real">NASA POWER</Tag>
-                    </div>
-                    <ClimateChart data={charts.monthly} />
-                  </section>
-                  <section>
-                    <div className="mb-2 flex items-center justify-between">
-                      <h2 className="text-sm font-semibold text-white">Yearly mean temperature</h2>
-                      <Tag tone="real">NASA POWER</Tag>
-                    </div>
-                    {charts.yearly.length > 0 ? (
-                      <TrendChart data={charts.yearly} />
-                    ) : (
-                      <p className="text-sm text-gray-500">No complete years in this range.</p>
-                    )}
-                  </section>
-                  <section>
-                    <h2 className="mb-2 text-sm font-semibold text-white">Insights</h2>
-                    <ul className="space-y-2">
-                      {insights.map((text) => (
-                        <li key={text} className="flex gap-2 text-xs text-gray-300">
-                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-glow" />
-                          {text}
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                </>
+
+            <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#0c1724] p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Annual temperature trend
+                  </h3>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Mean temperature for complete calendar years
+                  </p>
+                </div>
+                <StatusTag>NASA POWER</StatusTag>
+              </div>
+
+              {loading && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  Loading yearly trends…
+                </p>
+              )}
+
+              {!loading && charts?.yearly.length > 0 && (
+                <TrendChart data={charts.yearly} />
+              )}
+
+              {!loading && charts?.yearly.length === 0 && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  No complete years available in this date range.
+                </p>
               )}
             </div>
-          </aside>
+          </div>
+        </section>
 
-          {/* Right: layers, cities and notes */}
-          <aside className="glass-panel pointer-events-auto hidden w-[300px] shrink-0 flex-col overflow-hidden rounded-2xl xl:flex">
-            <div className="border-b border-white/10 p-4">
-              <h2 className="font-display text-base font-semibold text-white">Map layers and data</h2>
-              <p className="mt-1 text-[11px] text-gray-500">Click anywhere on the map to load that place.</p>
-            </div>
-            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-              <section>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Basemap</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(BASEMAPS).map(([key, b]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setBasemap(key)}
-                      className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
-                        basemap === key ? 'border-emerald-glow/40 bg-emerald-glow/10 text-emerald-glow' : 'border-white/10 text-gray-300 hover:border-white/20'
-                      }`}
-                    >
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
-              </section>
+        {/* Insights */}
+        <section>
+          <SectionHeading
+            eyebrow="Data interpretation"
+            title="What the records reveal"
+            detail="Automatically derived from the selected period"
+          />
 
-              <section>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Cities</p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {cityList.map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => pickRegion(r)}
-                      className={`truncate rounded-md border px-2 py-1.5 text-left text-xs transition ${
-                        selection.type === 'region' && selection.id === r.id
-                          ? 'border-emerald-glow/40 bg-emerald-glow/10 text-emerald-glow'
-                          : 'border-white/10 text-gray-300 hover:border-white/20'
-                      }`}
-                    >
-                      {r.name}
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              <section className="space-y-2">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Data layers</p>
-                <LayerRow label="City markers" hint="Starter set of world cities" checked={showMarkers} onChange={setShowMarkers} />
-                <LayerRow label="Vegetation (NDVI)" hint="Needs Sentinel-2 processing" disabled tag="Not connected" tone="off" />
-                <LayerRow label="Land surface temperature" hint="Satellite LST, different from air temperature" disabled tag="Not connected" tone="off" />
-                <LayerRow label="Air quality" hint="No reliable source yet" disabled tag="Not connected" tone="off" />
-              </section>
-
-              <section>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">About this data</p>
-                <ul className="space-y-2 text-xs text-gray-400">
-                  <li>{s ? s.grid_note : 'NASA POWER data is gridded at about 50 km.'}</li>
-                  <li>{s ? s.temperature_note : 'Air temperature at 2 m from NASA POWER.'}</li>
-                  <li>Ocean points also return values. They describe the model grid, not a measurement at sea.</li>
-                </ul>
-              </section>
-            </div>
-          </aside>
-        </div>
-
-        {/* Bottom: legend and timeline */}
-        <div className="glass-panel-strong pointer-events-auto mx-auto w-full max-w-3xl rounded-2xl p-3 sm:p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="sm:w-1/3">
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Mean air temperature</p>
-              <div className="legend-bar" />
-              <div className="mt-1 flex justify-between text-[10px] text-gray-400">
-                <span>{SCALE_MIN} °C</span>
-                <span>{SCALE_MAX} °C</span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="mb-1.5 flex items-center justify-between gap-2">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Period</p>
-                <div className="flex items-center gap-2">
-                  <select className={selectClass} value={startYear} onChange={(e) => changeStart(Number(e.target.value))}>
-                    {YEARS.map((y) => <option key={y}>{y}</option>)}
-                  </select>
-                  <span className="text-xs text-gray-500">to</span>
-                  <select className={selectClass} value={endYear} onChange={(e) => changeEnd(Number(e.target.value))}>
-                    {YEARS.map((y) => <option key={y}>{y}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="relative h-2 rounded-full bg-white/10">
+          <div className="grid gap-3 md:grid-cols-2">
+            {insights.length ? (
+              insights.map((insight) => (
                 <div
-                  className="absolute top-0 h-2 rounded-full bg-gradient-to-r from-emerald-glow to-teal-glow"
-                  style={{ left: `${trackLeft}%`, width: `${Math.min(trackWidth, 100 - trackLeft)}%` }}
-                />
+                  key={insight.title}
+                  className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <h3 className="text-sm font-semibold text-white">
+                      {insight.title}
+                    </h3>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">
+                    {insight.description}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5 text-sm text-slate-500">
+                {loading
+                  ? 'Analysing the selected climate records…'
+                  : 'Insights will appear when climate records are available.'}
               </div>
-              <div className="mt-1 flex justify-between text-[10px] text-gray-500">
-                <span>{YEARS[0]}</span>
-                <span>{YEARS[YEARS.length - 1]}</span>
-              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Period and methodology */}
+        <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5">
+            <SectionHeading
+              eyebrow="Time controls"
+              title="Choose analysis period"
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="block">
+                <span className="mb-2 block text-[10px] uppercase tracking-wider text-slate-500">
+                  Start year
+                </span>
+                <select
+                  value={startYear}
+                  onChange={(event) => changeStart(Number(event.target.value))}
+                  className="w-full rounded-xl border border-white/10 bg-[#101e2d] px-3 py-3 text-sm text-white outline-none focus:border-emerald-300/50"
+                >
+                  {YEARS.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-[10px] uppercase tracking-wider text-slate-500">
+                  End year
+                </span>
+                <select
+                  value={endYear}
+                  onChange={(event) => changeEnd(Number(event.target.value))}
+                  className="w-full rounded-xl border border-white/10 bg-[#101e2d] px-3 py-3 text-sm text-white outline-none focus:border-emerald-300/50"
+                >
+                  {YEARS.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <p className="mt-4 text-[11px] text-slate-500">
+              Changing the period reloads the climate summary and historical
+              time series.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5">
+            <SectionHeading
+              eyebrow="Methodology"
+              title="Know your data"
+            />
+
+            <div className="space-y-3 text-xs leading-5 text-slate-400">
+              <p>
+                <strong className="text-slate-200">Source:</strong>{' '}
+                NASA POWER monthly point data.
+              </p>
+              <p>
+                <strong className="text-slate-200">Temperature:</strong>{' '}
+                Air temperature at 2 metres (T2M), not satellite land surface
+                temperature.
+              </p>
+              <p>
+                <strong className="text-slate-200">Spatial resolution:</strong>{' '}
+                Approximately 0.5° × 0.625° grid cells, around 50 km. These
+                values do not represent precise neighbourhood measurements.
+              </p>
+              <p>
+                <strong className="text-slate-200">Rainfall:</strong>{' '}
+                Monthly precipitation totals derived from NASA POWER daily
+                precipitation rates.
+              </p>
             </div>
           </div>
-        </div>
+        </section>
+
+        <footer className="border-t border-white/[0.07] py-4 text-center text-[10px] tracking-wide text-slate-600">
+          KIZUKI · SEE THE CHANGE. UNDERSTAND THE CAUSE. PREDICT THE FUTURE.
+        </footer>
       </div>
     </div>
   )
