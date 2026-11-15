@@ -17,17 +17,17 @@ const LAYERS = {
   satellite: {
     label: 'Satellite',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles © Esri, Maxar, Earthstar Geographics and contributors'
+    attribution: 'Tiles Â© Esri, Maxar, Earthstar Geographics and contributors'
   },
   terrain: {
     label: 'Terrain',
     url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: '© OpenStreetMap contributors, SRTM | © OpenTopoMap (CC-BY-SA)'
+    attribution: 'Â© OpenStreetMap contributors, SRTM | Â© OpenTopoMap (CC-BY-SA)'
   },
   street: {
     label: 'Street',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '© OpenStreetMap contributors'
+    attribution: 'Â© OpenStreetMap contributors'
   }
 }
 
@@ -318,7 +318,7 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
               zoom={4}
               minZoom={2}
               maxZoom={18}
-              scrollWheelZoom={false}
+              scrollWheelZoom={true}
               zoomControl
               style={{ height: '100%', width: '100%', background: '#101820' }}
             >
@@ -357,7 +357,7 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
             </MapContainer>
 
             <div className="pointer-events-none absolute bottom-9 right-3 z-[500] rounded-md border border-white/20 bg-[#101820]/90 px-3 py-2 font-mono text-[10px] text-white">
-              {location.lat.toFixed(4)}° / {location.lng.toFixed(4)}°
+              {location.lat.toFixed(4)}Â° / {location.lng.toFixed(4)}Â°
             </div>
           </div>
 
@@ -381,7 +381,7 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
           <div className="grid grid-cols-2 gap-3">
             <Metric
               label="Scenes found"
-              value={loaded ? scenes.length : loading ? '...' : '—'}
+              value={loaded ? scenes.length : loading ? '...' : 'â€”'}
             />
             <Metric label="Sensor" value="Sentinel-2" />
           </div>
