@@ -1,4 +1,5 @@
-﻿import math
+﻿import traceback
+import math
 from datetime import date
 
 import httpx
@@ -224,10 +225,15 @@ def global_ndvi(
             ),
         }
 
-    except (httpx.HTTPError,
-            ValueError, KeyError, OSError) as exc:
+    except Exception as exc:
+        traceback.print_exc()
         raise HTTPException(
             status_code=502,
-            detail=f"Satellite processing failed: {exc}",
+            detail={
+                "error": "Satellite NDVI processing failed",
+                "exception_type": type(exc).__name__,
+                "message": str(exc)[:500],
+            },
         ) from exc
+
 
