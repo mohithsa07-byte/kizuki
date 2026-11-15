@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -45,7 +45,7 @@ function InfoCard({ label, value }) {
   )
 }
 
-export default function GlobalSatelliteExplorer() {
+export default function GlobalSatelliteExplorer({ onLocationChange }) {
   const [location, setLocation] = useState({
     lat: 12.9716,
     lng: 77.5946
@@ -203,7 +203,7 @@ export default function GlobalSatelliteExplorer() {
                 attribution="&copy; OpenStreetMap contributors"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              <MapClick onSelect={setLocation} />
+              <MapClick onSelect={(point) => { setLocation(point); onLocationChange?.(point) }} />
               <CircleMarker
                 center={[location.lat, location.lng]}
                 radius={8}
