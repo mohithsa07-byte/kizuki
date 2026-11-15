@@ -173,7 +173,13 @@ function MetricCard({ label, value, unit, description, status }) {
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
           {label}
         </p>
-        <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]" />
+        <span
+          className={`mt-1 h-2 w-2 rounded-full ${
+            ['NASA POWER', 'Sentinel-2'].includes(status)
+              ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]'
+              : 'bg-slate-600'
+          }`}
+        />
       </div>
 
       <div className="mt-4 flex items-baseline gap-1.5">
@@ -187,7 +193,7 @@ function MetricCard({ label, value, unit, description, status }) {
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[11px] text-slate-500">{description}</p>
-        <StatusTag type={status === 'NASA POWER' ? 'real' : 'unavailable'}>
+        <StatusTag type={['NASA POWER', 'Sentinel-2'].includes(status) ? 'real' : 'unavailable'}>
           {status}
         </StatusTag>
       </div>
@@ -211,12 +217,83 @@ function SectionHeading({ eyebrow, title, detail }) {
   )
 }
 
+function useOverviewNDVI(lat, lng) {
+  const [result, setResult] = useState({
+    data: null,
+    loading: true,
+    error: null
+  })
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function load() {
+      setResult({
+        data: null,
+        loading: true,
+        error: null
+      })
+
+      const params = new URLSearchParams({
+        lat: String(lat),
+        lng: String(lng),
+        start_date: '2024-01-01',
+        end_date: '2024-12-31',
+        max_cloud: '30'
+      })
+
+      try {
+        const response = await fetch(
+          `https://kizuki-eta.vercel.app/api/satellite/ndvi?${params}`,
+          { signal: controller.signal }
+        )
+
+        if (!response.ok) {
+          throw new Error(`Satellite API HTTP ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        if (!controller.signal.aborted) {
+          setResult({
+            data,
+            loading: false,
+            error: null
+          })
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setResult({
+            data: null,
+            loading: false,
+            error: error.message
+          })
+        }
+      }
+    }
+
+    load()
+    return () => controller.abort()
+  }, [lat, lng])
+
+  return result
+}
 export default function Overview() {
   const [startYear, setStartYear] = useState(2016)
   const [endYear, setEndYear] = useState(2023)
   const [basemap, setBasemap] = useState('dark')
   const [selection, setSelection] = useState(DEFAULT_SELECTION)
 
+  const overviewNDVI = useOverviewNDVI(
+    Number(selection.lat.toFixed(4)),
+    Number(selection.lng.toFixed(4))
+  )
+
+  const measuredNDVI =
+    overviewNDVI.data?.status === 'available' &&
+    overviewNDVI.data?.is_sample === false
+      ? overviewNDVI.data?.mean_ndvi
+      : null
   const regions = useApi('/api/regions')
 
   const locationQuery =
@@ -319,11 +396,29 @@ export default function Overview() {
               status={summaryData ? 'NASA POWER' : 'Unavailable'}
             />
 
-            <MetricCard
+                        <MetricCard
               label="Vegetation index"
-              value="N/A"
-              description="Sentinel-2 processing required"
-              status="Not connected"
+              value={
+                overviewNDVI.loading
+                  ? '...'
+                  : measuredNDVI != null
+                    ? Number(measuredNDVI).toFixed(4)
+                    : 'N/A'
+              }
+              description={
+                measuredNDVI != null
+                  ? `Point NDVI · ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
+                  : overviewNDVI.loading
+                    ? 'Loading Sentinel-2 observation'
+                    : 'No valid 2024 point observation'
+              }
+              status={
+                measuredNDVI != null
+                  ? 'Sentinel-2'
+                  : overviewNDVI.loading
+                    ? 'Loading'
+                    : 'Unavailable'
+              }
             />
 
             <MetricCard

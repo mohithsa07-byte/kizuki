@@ -79,12 +79,17 @@ export default function OverviewHero({
           <div className="absolute h-[245px] w-[245px] rounded-full border border-cyan-300/10 sm:h-[290px] sm:w-[290px]" />
           <div className="absolute h-[210px] w-[210px] rounded-full bg-emerald-500/10 blur-[70px]" />
 
-          <div className="relative flex h-[230px] w-[230px] items-center justify-center overflow-hidden rounded-full border border-emerald-300/30 bg-[radial-gradient(circle_at_30%_25%,#2a786a,#123c52_45%,#07121e_80%)] shadow-[0_0_65px_rgba(16,185,129,0.2)] sm:h-[280px] sm:w-[280px]">
-            <Globe2
-              size={185}
-              strokeWidth={0.65}
-              className="text-emerald-200/50"
-            />
+                    <div className="relative flex h-[230px] w-[230px] items-center justify-center sm:h-[280px] sm:w-[280px]">
+            <div className="absolute inset-[-14px] rounded-full border border-emerald-300/15" />
+            <div className="absolute inset-[-28px] rounded-full border border-cyan-300/10" />
+
+            <div className="kizuki-earth relative h-full w-full overflow-hidden rounded-full">
+              <div className="kizuki-earth-texture absolute inset-0" />
+              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_30%,transparent_18%,rgba(2,12,24,0.08)_45%,rgba(2,10,22,0.86)_100%)]" />
+              <div className="absolute inset-0 rounded-full border border-cyan-200/30" />
+            </div>
+
+            <div className="pointer-events-none absolute inset-[-7px] rounded-full border border-cyan-300/10 shadow-[0_0_65px_rgba(34,211,238,0.22)]" />
           </div>
 
           <div className="absolute bottom-1 right-0 rounded-xl border border-emerald-300/20 bg-[#081824]/95 px-4 py-3 shadow-2xl backdrop-blur-xl sm:right-4">
@@ -112,6 +117,40 @@ export default function OverviewHero({
           Historical period: {startYear} - {endYear}
         </span>
       </div>
+
+<style>{`
+  .kizuki-earth {
+    background: radial-gradient(
+      circle at 30% 30%,
+      #215d75,
+      #08273d 65%,
+      #03101d
+    );
+    box-shadow:
+      inset -25px -15px 45px rgba(0,0,0,.7),
+      0 0 55px rgba(20,184,166,.22);
+  }
+
+  .kizuki-earth-texture {
+    background-image:
+      url("https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg");
+    background-size: auto 100%;
+    background-position: 0% center;
+    background-repeat: repeat-x;
+    animation: kizuki-rotate-earth 55s linear infinite;
+  }
+
+  @keyframes kizuki-rotate-earth {
+    from { background-position: 0% center; }
+    to { background-position: -2048px center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kizuki-earth-texture {
+      animation: none;
+    }
+  }
+`}</style>
     </section>
   )
 }
