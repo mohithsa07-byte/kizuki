@@ -1,0 +1,78 @@
+/* KIZUKI mobile navigation */
+
+.kizuki-app-shell {
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.kizuki-mobile-main {
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+}
+
+.kizuki-bottom-nav {
+  position: fixed;
+  z-index: 1000;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  min-height: 65px;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+
+  background: rgba(16, 24, 32, 0.97);
+  border-top: 1px solid #35444b;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.kizuki-bottom-link {
+  display: flex;
+  min-width: 0;
+  min-height: 50px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  border-radius: 8px;
+  color: #94a6a8;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.kizuki-bottom-link svg {
+  flex-shrink: 0;
+}
+
+.kizuki-bottom-link-active {
+  background: rgba(121, 183, 165, 0.09);
+  color: #79b7a5;
+}
+
+.kizuki-bottom-link:focus-visible {
+  outline: 2px solid #79b7a5;
+  outline-offset: -2px;
+}
+
+@media (min-width: 1024px) {
+  .kizuki-bottom-nav {
+    display: none;
+  }
+
+  .kizuki-mobile-main {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .kizuki-bottom-link {
+    font-size: 9px;
+    gap: 4px;
+  }
+}
