@@ -33,7 +33,7 @@ export default function GlobalNDVI() {
 
       if (!response.ok) {
         throw new Error(
-          result.detail || `API error ${response.status}`
+          typeof result.detail === 'string' ? result.detail : JSON.stringify(result.detail || { status: response.status })
         )
       }
 
@@ -139,3 +139,4 @@ export default function GlobalNDVI() {
     </section>
   )
 }
+

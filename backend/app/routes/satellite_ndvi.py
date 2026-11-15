@@ -23,13 +23,21 @@ def global_ndvi(
             detail="Invalid date range.",
         )
 
+    if (end_date - start_date).days > 366:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum date range is 366 days.",
+        )
+
+    delta = 0.003
+
     payload = {
         "collections": [COLLECTION],
         "bbox": [
-            max(-180, lng - 0.003),
-            max(-90, lat - 0.003),
-            min(180, lng + 0.003),
-            min(90, lat + 0.003),
+            max(-180, lng - delta),
+            max(-90, lat - delta),
+            min(180, lng + delta),
+            min(90, lat + delta),
         ],
         "datetime": (
             f"{start_date.isoformat()}T00:00:00Z/"
@@ -39,14 +47,16 @@ def global_ndvi(
     }
 
     try:
-        with httpx.Client(timeout=20) as client:
+        with httpx.Client(
+            timeout=httpx.Timeout(20.0, connect=5.0)
+        ) as client:
             response = client.post(STAC_URL, json=payload)
             response.raise_for_status()
             features = response.json().get("features", [])
 
         candidates = [
-            item for item in features
-            if item.get("properties", {}).get(
+            scene for scene in features
+            if scene.get("properties", {}).get(
                 "eo:cloud_cover", 100
             ) <= max_cloud
         ]
@@ -79,15 +89,15 @@ def global_ndvi(
                 "properties"
             ].get("eo:cloud_cover"),
             "note": (
-                "Real satellite scene discovered. "
-                "NDVI calculation is unavailable until "
-                "a compatible raster processing service "
-                "is configured."
+                "Satellite scene discovered successfully. "
+                "NDVI has not been calculated. "
+                "A compatible raster-processing service "
+                "is still required."
             ),
         }
 
     except httpx.HTTPError as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Satellite request failed: {exc}",
+            detail=f"Satellite catalog request failed: {exc}",
         ) from exc
