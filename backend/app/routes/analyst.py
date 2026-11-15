@@ -57,14 +57,11 @@ async def nvidia_chat(client, messages, max_tokens=900, temperature=0.2):
         json={
             "model": os.getenv("NVIDIA_MODEL", MODEL),
             "messages": messages,
-            "temperature": temperature,
-            "top_p": 0.9,
+            "temperature": 0.6,
             "max_tokens": max_tokens,
             "stream": False,
-            "extra_body": {
-                "chat_template_kwargs": {
-                    "enable_thinking": False
-                }
+            "chat_template_kwargs": {
+                "enable_thinking": False
             }
         },
         timeout=55.0
@@ -73,7 +70,10 @@ async def nvidia_chat(client, messages, max_tokens=900, temperature=0.2):
     if response.status_code != 200:
         raise HTTPException(
             status_code=502,
-            detail=f"NVIDIA inference failed (status {response.status_code})."
+            detail=(
+                f"NVIDIA inference failed (status {response.status_code}): "
+                + response.text[:500]
+            )
         )
 
     try:
