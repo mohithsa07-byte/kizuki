@@ -26,11 +26,11 @@ function getImageUrl(sceneId, location) {
     collection: 'sentinel-2-l2a',
     item: sceneId,
     assets: 'visual',
-    width: '700',
-    height: '500'
+    asset_bidx: 'visual|1,2,3',
+    nodata: '0'
   })
 
-  return `${PC}/item/crop/${bbox}.png?${params}`
+  return `${PC}/item/bbox/${bbox}/700x500.png?${params}`
 }
 
 async function getMeasurement(location, year) {
