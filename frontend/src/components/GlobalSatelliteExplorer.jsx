@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   MapContainer, TileLayer, CircleMarker,
-  useMap, useMapEvents, ScaleControl
+  useMap, useMapEvents, ScaleControl, ImageOverlay
 } from 'react-leaflet'
 import {
   Satellite, MapPin, Cloud, Calendar,
@@ -31,6 +31,34 @@ const LAYERS = {
   }
 }
 
+const PC_TILES = 'https://planetarycomputer.microsoft.com/api/data/v1'
+
+function getHistoricalOverlay(sceneId, location) {
+  if (!sceneId) return null
+
+  // Fixed geographic footprint centered on the selected point.
+  // This is a local observation patch, not a global yearly mosaic.
+  const delta = 0.009
+  const south = Math.max(-85, location.lat - delta)
+  const north = Math.min(85, location.lat + delta)
+  const west = Math.max(-180, location.lng - delta)
+  const east = Math.min(180, location.lng + delta)
+
+  const bbox = [west, south, east, north].join(',')
+
+  const params = new URLSearchParams({
+    collection: 'sentinel-2-l2a',
+    item: sceneId,
+    assets: 'visual',
+    asset_bidx: 'visual|1,2,3',
+    nodata: '0'
+  })
+
+  return {
+    url: `${PC_TILES}/item/bbox/${bbox}/700x500.png?${params}`,
+    bounds: [[south, west], [north, east]]
+  }
+}
 function SelectOnMap({ onSelect }) {
   useMapEvents({
     click(event) {
@@ -86,6 +114,7 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
   const [year, setYear] = useState(2024)
   const [maxCloud, setMaxCloud] = useState(30)
   const [scenes, setScenes] = useState([])
+  const [overlayFailed, setOverlayFailed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [loaded, setLoaded] = useState(false)
@@ -94,6 +123,11 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState('')
 
+  const historicalScene = scenes.find(scene => scene.id) || null
+  const historicalOverlay =
+    loaded && historicalScene
+      ? getHistoricalOverlay(historicalScene.id, location)
+      : null
   function selectLocation(point, zoom = 10) {
     const lat = Math.max(-85, Math.min(85, Number(point.lat)))
     const lng = Math.max(-180, Math.min(180, Number(point.lng)))
@@ -151,6 +185,7 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
       setError('')
       setLoaded(false)
       setScenes([])
+      setOverlayFailed(false)
 
       const params = new URLSearchParams({
         lat: String(location.lat),
@@ -330,6 +365,20 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
                 maxNativeZoom={layer === 'terrain' ? 17 : 18}
                 className={layer === 'street' ? 'osm-dark' : ''}
               />
+              {layer === 'satellite' &&
+                historicalOverlay &&
+                !overlayFailed && (
+                  <ImageOverlay
+                    key={`${historicalScene.id}-${year}-${location.lat}-${location.lng}`}
+                    url={historicalOverlay.url}
+                    bounds={historicalOverlay.bounds}
+                    opacity={1}
+                    zIndex={450}
+                    eventHandlers={{
+                      error: () => setOverlayFailed(true)
+                    }}
+                  />
+                )}
               <SelectOnMap onSelect={point => selectLocation(point, targetZoom)} />
               <FlyToLocation location={location} targetZoom={targetZoom} />
               <MapResize />
@@ -361,6 +410,29 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
             </div>
           </div>
 
+          {layer === 'satellite' && (
+            <div className="border-t border-white/10 px-4 py-3 text-xs text-slate-400">
+              {loading ? (
+                <span>Finding imagery for {year}...</span>
+              ) : historicalOverlay && !overlayFailed ? (
+                <span>
+                  Historical Sentinel-2 image patch:
+                  {' '}
+                  <strong className="text-[#79b7a5]">
+                    {historicalScene.date?.slice(0, 10) || year}
+                  </strong>
+                  {' · '}
+                  Displayed near the selected coordinate.
+                  The surrounding basemap is not historical.
+                </span>
+              ) : (
+                <span>
+                  Historical imagery unavailable for this selection.
+                  The visible basemap is not imagery from {year}.
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
             <p className="flex items-center gap-2 text-xs text-slate-400">
               <Crosshair size={14} />
