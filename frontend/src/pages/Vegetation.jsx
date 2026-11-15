@@ -1,52 +1,84 @@
 ﻿
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity, ArrowDownRight, ArrowUpRight,
-  Info, Leaf, MapPin, RefreshCw, Satellite
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  Info,
+  Leaf,
+  MapPin,
+  RefreshCw,
+  Satellite
 } from 'lucide-react'
-import { MapContainer, TileLayer, CircleMarker, useMapEvents } from 'react-leaflet'
 import {
-  ResponsiveContainer, LineChart, Line,
-  CartesianGrid, XAxis, YAxis, Tooltip
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  useMapEvents
+} from 'react-leaflet'
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip
 } from 'recharts'
 import PageHeader from '../components/PageHeader'
 
-const API_BASE = (
-  const API_BASE = 'https://kizuki-eta.vercel.app/api'
-).replace(/\/$/, '')
+// KIZUKI API
+const API_BASE = 'https://kizuki-eta.vercel.app/api'
 
-// Set VITE_API_BASE_URL to the deployed KIZUKI API URL.
-// The BuildEstimate URL above is NOT a KIZUKI API;
-// it is only a placeholder and must be replaced before deployment.
+const YEARS = Array.from(
+  { length: 11 },
+  (_, index) => 2015 + index
+)
 
 const selectClass =
   'w-full rounded-xl border border-white/10 bg-[#101d2b] px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-400'
 
-const YEARS = Array.from({ length: 11 }, (_, i) => 2015 + i)
-
 function Panel({ title, subtitle, children }) {
   return (
     <section className="rounded-2xl border border-white/10 bg-[#0c1825]/90 p-5 shadow-xl">
-      <h2 className="text-base font-semibold text-white">{title}</h2>
+      <h2 className="text-base font-semibold text-white">
+        {title}
+      </h2>
+
       {subtitle && (
-        <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+        <p className="mt-1 text-xs text-slate-400">
+          {subtitle}
+        </p>
       )}
+
       <div className="mt-5">{children}</div>
     </section>
   )
 }
 
-function Metric({ title, value, detail, icon: Icon, color = 'text-emerald-400' }) {
+function Metric({
+  title,
+  value,
+  detail,
+  icon: Icon,
+  color = 'text-emerald-400'
+}) {
   return (
     <div className="rounded-2xl border border-white/10 bg-[#0c1825] p-5">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-slate-400">{title}</span>
+        <span className="text-sm text-slate-400">
+          {title}
+        </span>
         <Icon size={19} className={color} />
       </div>
+
       <div className={`mt-4 text-3xl font-semibold ${color}`}>
         {value}
       </div>
-      <p className="mt-2 text-xs text-slate-500">{detail}</p>
+
+      <p className="mt-2 text-xs text-slate-500">
+        {detail}
+      </p>
     </div>
   )
 }
@@ -60,21 +92,66 @@ function LocationPicker({ onPick }) {
       })
     }
   })
+
   return null
 }
 
 function meanForYear(points, year) {
   const values = points
-    .filter(p =>
-      p.date?.startsWith(`${year}-`) &&
-      p.used === true &&
-      typeof p.ndvi === 'number'
+    .filter(
+      point =>
+        point.date?.startsWith(`${year}-`) &&
+        point.used === true &&
+        typeof point.ndvi === 'number'
     )
-    .map(p => p.ndvi)
+    .map(point => point.ndvi)
 
   if (!values.length) return null
 
-  return values.reduce((a, b) => a + b, 0) / values.length
+  return (
+    values.reduce((sum, value) => sum + value, 0) /
+    values.length
+  )
+}
+
+function validCountForYear(points, year) {
+  return points.filter(
+    point =>
+      point.date?.startsWith(`${year}-`) &&
+      point.used === true &&
+      typeof point.ndvi === 'number'
+  ).length
+}
+
+async function fetchYearNDVI(location, year, signal) {
+  const params = new URLSearchParams({
+    lat: String(location.lat),
+    lng: String(location.lng),
+    start_date: `${year}-01-01`,
+    end_date: `${year}-12-31`
+  })
+
+  const response = await fetch(
+    `${API_BASE}/ndvi/timeseries?${params.toString()}`,
+    { signal }
+  )
+
+  if (!response.ok) {
+    let message = `NDVI API error: ${response.status}`
+
+    try {
+      const body = await response.json()
+      if (body.detail) {
+        message = String(body.detail)
+      }
+    } catch {
+      // Keep HTTP error message.
+    }
+
+    throw new Error(message)
+  }
+
+  return response.json()
 }
 
 export default function Vegetation() {
@@ -82,9 +159,13 @@ export default function Vegetation() {
     lat: 12.9716,
     lng: 77.5946
   })
+
   const [yearA, setYearA] = useState(2022)
   const [yearB, setYearB] = useState(2023)
-  const [data, setData] = useState(null)
+
+  const [beforeData, setBeforeData] = useState(null)
+  const [afterData, setAfterData] = useState(null)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
@@ -92,82 +173,106 @@ export default function Vegetation() {
   useEffect(() => {
     const controller = new AbortController()
 
-    async function load() {
+    async function loadData() {
       setLoading(true)
       setError('')
-      setData(null)
-
-      const startYear = Math.min(yearA, yearB)
-      const endYear = Math.max(yearA, yearB)
-
-      const params = new URLSearchParams({
-        lat: String(location.lat),
-        lng: String(location.lng),
-        start_date: `${startYear}-01-01`,
-        end_date: `${endYear}-12-31`
-      })
+      setBeforeData(null)
+      setAfterData(null)
 
       try {
-        const response = await fetch(
-          `${API_BASE}/ndvi/timeseries?${params}`,
-          { signal: controller.signal }
-        )
+        const [beforeResult, afterResult] =
+          await Promise.all([
+            fetchYearNDVI(location, yearA, controller.signal),
+            yearA === yearB
+              ? fetchYearNDVI(location, yearA, controller.signal)
+              : fetchYearNDVI(location, yearB, controller.signal)
+          ])
 
-        if (!response.ok) {
-          let message = `API error ${response.status}`
-          try {
-            const body = await response.json()
-            if (body.detail) message = String(body.detail)
-          } catch {
-            // Keep the HTTP status message.
-          }
-          throw new Error(message)
+        if (!controller.signal.aborted) {
+          setBeforeData(beforeResult)
+          setAfterData(afterResult)
         }
-
-        const result = await response.json()
-        if (!controller.signal.aborted) setData(result)
       } catch (err) {
         if (!controller.signal.aborted) {
-          setError(err.message || 'Unable to load NDVI data')
+          setError(
+            err.message || 'Unable to retrieve satellite data'
+          )
         }
       } finally {
-        if (!controller.signal.aborted) setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
-    load()
-    return () => controller.abort()
-  }, [location.lat, location.lng, yearA, yearB, refresh])
+    loadData()
 
-  const points = data?.points || []
+    return () => controller.abort()
+  }, [
+    location.lat,
+    location.lng,
+    yearA,
+    yearB,
+    refresh
+  ])
+
+  const beforePoints = useMemo(
+    () => beforeData?.points || [],
+    [beforeData]
+  )
+
+  const afterPoints = useMemo(
+    () => afterData?.points || [],
+    [afterData]
+  )
 
   const before = useMemo(
-    () => meanForYear(points, yearA),
-    [points, yearA]
+    () => meanForYear(beforePoints, yearA),
+    [beforePoints, yearA]
   )
 
   const after = useMemo(
-    () => meanForYear(points, yearB),
-    [points, yearB]
+    () => meanForYear(afterPoints, yearB),
+    [afterPoints, yearB]
   )
 
   const difference =
-    before !== null && after !== null ? after - before : null
+    before !== null && after !== null
+      ? after - before
+      : null
 
   const relative =
     difference !== null && before !== 0
       ? (difference / Math.abs(before)) * 100
       : null
 
-  const chartData = useMemo(
-    () => points.map(p => ({
-      date: p.date,
-      ndvi: p.used ? p.ndvi : null
-    })),
-    [points]
-  )
+  const chartData = useMemo(() => {
+    const combined = [
+      ...beforePoints,
+      ...(yearA === yearB ? [] : afterPoints)
+    ]
 
-  const format = value =>
+    return combined
+      .map(point => ({
+        date: point.date,
+        ndvi: point.used ? point.ndvi : null
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+  }, [beforePoints, afterPoints, yearA, yearB])
+
+  const totalValid =
+    validCountForYear(beforePoints, yearA) +
+    (yearA === yearB
+      ? 0
+      : validCountForYear(afterPoints, yearB))
+
+  const totalDropped =
+    (beforeData?.dropped_count || 0) +
+    (yearA === yearB
+      ? 0
+      : afterData?.dropped_count || 0)
+
+  const formatNDVI = value =>
     value === null ? 'N/A' : value.toFixed(3)
 
   return (
@@ -182,8 +287,10 @@ export default function Vegetation() {
           <Satellite size={15} />
           NASA MODIS · 250 m · 16-day composites
         </div>
+
         <button
-          onClick={() => setRefresh(v => v + 1)}
+          type="button"
+          onClick={() => setRefresh(value => value + 1)}
           className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-white hover:bg-white/5"
         >
           <RefreshCw size={15} />
@@ -192,38 +299,61 @@ export default function Vegetation() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Panel title="Observation A" subtitle="Baseline year">
+        <Panel
+          title="Observation A"
+          subtitle="Baseline year"
+        >
           <select
             className={selectClass}
             value={yearA}
-            onChange={e => setYearA(Number(e.target.value))}
+            onChange={event =>
+              setYearA(Number(event.target.value))
+            }
           >
-            {YEARS.map(y => <option key={y}>{y}</option>)}
+            {YEARS.map(year => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
           </select>
         </Panel>
 
-        <Panel title="Observation B" subtitle="Comparison year">
+        <Panel
+          title="Observation B"
+          subtitle="Comparison year"
+        >
           <select
             className={selectClass}
             value={yearB}
-            onChange={e => setYearB(Number(e.target.value))}
+            onChange={event =>
+              setYearB(Number(event.target.value))
+            }
           >
-            {YEARS.map(y => <option key={y}>{y}</option>)}
+            {YEARS.map(year => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
           </select>
         </Panel>
 
-        <Panel title="Selected location" subtitle="Click the map to change">
+        <Panel
+          title="Selected location"
+          subtitle="Click the map to change location"
+        >
           <div className="flex items-center gap-2 text-sm text-emerald-300">
             <MapPin size={17} />
-            {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+            {location.lat.toFixed(4)},
+            {' '}
+            {location.lng.toFixed(4)}
           </div>
         </Panel>
       </div>
 
       {loading && (
-        <p className="text-sm text-emerald-300">
+        <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4 text-sm text-emerald-300">
           Fetching satellite observations...
-        </p>
+        </div>
       )}
 
       {error && (
@@ -235,47 +365,66 @@ export default function Vegetation() {
       <div className="grid gap-4 md:grid-cols-3">
         <Metric
           title={`Mean NDVI · ${yearA}`}
-          value={format(before)}
-          detail="Average of quality-approved observations"
+          value={formatNDVI(before)}
+          detail="Mean of quality-approved observations"
           icon={Leaf}
         />
+
         <Metric
           title={`Mean NDVI · ${yearB}`}
-          value={format(after)}
-          detail="Average of quality-approved observations"
+          value={formatNDVI(after)}
+          detail="Mean of quality-approved observations"
           icon={Activity}
           color="text-cyan-300"
         />
+
         <Metric
           title="NDVI difference"
-          value={difference === null ? 'N/A' : `${difference >= 0 ? '+' : ''}${difference.toFixed(3)}`}
-          detail={relative === null
-            ? 'Insufficient comparable data'
-            : `${relative >= 0 ? '+' : ''}${relative.toFixed(1)}% relative change`}
-          icon={difference !== null && difference < 0 ? ArrowDownRight : ArrowUpRight}
-          color={difference !== null && difference < 0
-            ? 'text-orange-400'
-            : 'text-emerald-400'}
+          value={
+            difference === null
+              ? 'N/A'
+              : `${difference >= 0 ? '+' : ''}${difference.toFixed(3)}`
+          }
+          detail={
+            relative === null
+              ? 'Insufficient comparable data'
+              : `${relative >= 0 ? '+' : ''}${relative.toFixed(1)}% relative change`
+          }
+          icon={
+            difference !== null && difference < 0
+              ? ArrowDownRight
+              : ArrowUpRight
+          }
+          color={
+            difference !== null && difference < 0
+              ? 'text-orange-400'
+              : 'text-emerald-400'
+          }
         />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
         <Panel
           title="Satellite observation point"
-          subtitle="Select a location to retrieve its MODIS pixel observations."
+          subtitle="Click anywhere on the map to select a MODIS observation pixel."
         >
           <div className="h-[350px] overflow-hidden rounded-xl">
             <MapContainer
               center={[12.9716, 77.5946]}
               zoom={10}
               scrollWheelZoom
-              style={{ height: '100%', width: '100%' }}
+              style={{
+                height: '100%',
+                width: '100%'
+              }}
             >
               <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+
               <LocationPicker onPick={setLocation} />
+
               <CircleMarker
                 center={[location.lat, location.lng]}
                 radius={9}
@@ -287,29 +436,43 @@ export default function Vegetation() {
               />
             </MapContainer>
           </div>
+
           <p className="mt-3 text-xs text-slate-400">
-            The map shows the selected observation location, not a satellite NDVI raster layer.
+            The map identifies the selected observation
+            location. It is not an NDVI raster map.
           </p>
         </Panel>
 
         <Panel
           title="NDVI observation history"
-          subtitle="Only observations passing MODIS pixel-reliability filtering are plotted."
+          subtitle="Good-quality MODIS observations from the selected years."
         >
           <div className="h-[350px]">
-            {chartData.length ? (
-              <ResponsiveContainer width="100%" height="100%">
+            {chartData.length > 0 ? (
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+              >
                 <LineChart data={chartData}>
                   <CartesianGrid stroke="#ffffff12" />
+
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tick={{
+                      fill: '#94a3b8',
+                      fontSize: 10
+                    }}
                     minTickGap={35}
                   />
+
                   <YAxis
                     domain={[-0.2, 1]}
-                    tick={{ fill: '#94a3b8', fontSize: 11 }}
+                    tick={{
+                      fill: '#94a3b8',
+                      fontSize: 11
+                    }}
                   />
+
                   <Tooltip
                     contentStyle={{
                       background: '#0c1825',
@@ -317,6 +480,7 @@ export default function Vegetation() {
                       borderRadius: 12
                     }}
                   />
+
                   <Line
                     type="monotone"
                     dataKey="ndvi"
@@ -329,50 +493,72 @@ export default function Vegetation() {
               </ResponsiveContainer>
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-slate-500">
-                {loading ? 'Loading observations...' : 'No observations available'}
+                {loading
+                  ? 'Loading observations...'
+                  : 'No observations available'}
               </div>
             )}
           </div>
         </Panel>
       </div>
 
-      <Panel title="Satellite data quality" subtitle="Source transparency and methodology">
+      <Panel
+        title="Satellite data quality"
+        subtitle="Source transparency and scientific methodology"
+      >
         <div className="grid gap-4 sm:grid-cols-3">
           <Metric
             title="Valid observations"
-            value={data?.valid_count ?? '—'}
+            value={beforeData ? totalValid : '—'}
             detail="Good-quality observations"
             icon={Leaf}
           />
+
           <Metric
             title="Excluded observations"
-            value={data?.dropped_count ?? '—'}
+            value={beforeData ? totalDropped : '—'}
             detail="Filtered or missing observations"
             icon={Info}
             color="text-orange-300"
           />
+
           <Metric
             title="Spatial resolution"
-            value={data ? `${data.resolution_m} m` : '—'}
-            detail="Single satellite pixel"
+            value={
+              beforeData
+                ? `${beforeData.resolution_m} m`
+                : '—'
+            }
+            detail="Single MODIS pixel"
             icon={Satellite}
             color="text-cyan-300"
           />
         </div>
 
         <div className="mt-5 space-y-2 text-xs leading-relaxed text-slate-400">
-          <p>Source: {data?.source || 'NASA MODIS via ORNL DAAC'}</p>
-          <p>NDVI = (NIR − Red) / (NIR + Red).</p>
           <p>
-            Annual averages are calculated from available good-quality observations.
+            Source: {beforeData?.source ||
+              'NASA MODIS via ORNL DAAC'}
+          </p>
+
+          <p>
+            NDVI = (NIR − Red) / (NIR + Red).
+          </p>
+
+          <p>
+            Annual averages are calculated from
+            available good-quality observations.
             Uneven seasonal coverage can affect comparisons.
           </p>
+
           <p>
-            NDVI measures vegetation greenness, not direct tree count,
-            biodiversity or forest area. Changes do not establish their cause.
+            NDVI measures vegetation greenness,
+            not direct tree count, biodiversity or forest area.
+            Changes do not establish their cause.
           </p>
-          {data?.notes?.map((note, i) => (
-            <p key={i}>{note}</p>
+
+          {beforeData?.notes?.map((note, index) => (
+            <p key={index}>{note}</p>
           ))}
         </div>
       </Panel>
