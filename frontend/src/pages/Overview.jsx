@@ -175,7 +175,7 @@ function MetricCard({ label, value, unit, description, status }) {
         </p>
         <span
           className={`mt-1 h-2 w-2 rounded-full ${
-            ['NASA POWER', 'Sentinel-2'].includes(status)
+            ['NASA POWER', 'Sentinel-2', 'Open-Meteo'].includes(status)
               ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]'
               : 'bg-slate-600'
           }`}
@@ -193,7 +193,7 @@ function MetricCard({ label, value, unit, description, status }) {
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[11px] text-slate-500">{description}</p>
-        <StatusTag type={['NASA POWER', 'Sentinel-2'].includes(status) ? 'real' : 'unavailable'}>
+        <StatusTag type={['NASA POWER', 'Sentinel-2', 'Open-Meteo'].includes(status) ? 'real' : 'unavailable'}>
           {status}
         </StatusTag>
       </div>
@@ -278,6 +278,81 @@ function useOverviewNDVI(lat, lng) {
 
   return result
 }
+function useOverviewAQI(lat, lng) {
+  const [result, setResult] = useState({
+    value: null,
+    time: null,
+    loading: true,
+    error: null
+  })
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function load() {
+      setResult({
+        value: null,
+        time: null,
+        loading: true,
+        error: null
+      })
+
+      const params = new URLSearchParams({
+        latitude: String(lat),
+        longitude: String(lng),
+        current: 'us_aqi',
+        timezone: 'auto'
+      })
+
+      try {
+        const response = await fetch(
+          `https://air-quality-api.open-meteo.com/v1/air-quality?${params}`,
+          { signal: controller.signal }
+        )
+
+        if (!response.ok) {
+          throw new Error(`AQI API HTTP ${response.status}`)
+        }
+
+        const data = await response.json()
+        const value = data.current?.us_aqi
+
+        if (!controller.signal.aborted) {
+          setResult({
+            value: Number.isFinite(value) ? value : null,
+            time: data.current?.time || null,
+            loading: false,
+            error: null
+          })
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setResult({
+            value: null,
+            time: null,
+            loading: false,
+            error: error.message
+          })
+        }
+      }
+    }
+
+    load()
+    return () => controller.abort()
+  }, [lat, lng])
+
+  return result
+}
+
+function getAQICategory(value) {
+  if (value == null) return null
+  if (value <= 50) return 'Good'
+  if (value <= 100) return 'Moderate'
+  if (value <= 150) return 'Unhealthy for sensitive groups'
+  if (value <= 200) return 'Unhealthy'
+  if (value <= 300) return 'Very unhealthy'
+  return 'Hazardous'
+}
 export default function Overview() {
   const [startYear, setStartYear] = useState(2016)
   const [endYear, setEndYear] = useState(2023)
@@ -294,6 +369,12 @@ export default function Overview() {
     overviewNDVI.data?.is_sample === false
       ? overviewNDVI.data?.mean_ndvi
       : null
+  const overviewAQI = useOverviewAQI(
+    Number(selection.lat.toFixed(4)),
+    Number(selection.lng.toFixed(4))
+  )
+
+  const aqiCategory = getAQICategory(overviewAQI.value)
   const regions = useApi('/api/regions')
 
   const locationQuery =
@@ -421,11 +502,29 @@ export default function Overview() {
               }
             />
 
-            <MetricCard
+                        <MetricCard
               label="Air quality index"
-              value="N/A"
-              description="Air quality source not connected"
-              status="Not connected"
+              value={
+                overviewAQI.loading
+                  ? '...'
+                  : overviewAQI.value != null
+                    ? Math.round(overviewAQI.value)
+                    : 'N/A'
+              }
+              description={
+                overviewAQI.value != null
+                  ? `${aqiCategory} · US AQI · ${overviewAQI.time || 'Current estimate'}`
+                  : overviewAQI.loading
+                    ? 'Loading air quality estimate'
+                    : 'Air quality data unavailable'
+              }
+              status={
+                overviewAQI.value != null
+                  ? 'Open-Meteo'
+                  : overviewAQI.loading
+                    ? 'Loading'
+                    : 'Unavailable'
+              }
             />
           </div>
         </section>
