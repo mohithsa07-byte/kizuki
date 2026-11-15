@@ -2,11 +2,11 @@
 from datetime import date
 
 import httpx
-import numpy as np
-import rasterio
-from rasterio.enums import Resampling
-from rasterio.windows import Window
-from rasterio.warp import transform
+
+
+
+
+
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -70,6 +70,10 @@ def find_scene(lat, lng, start_date, end_date, max_cloud):
 
 
 def read_window(url, lat, lng, radius=8):
+    import rasterio
+    from rasterio.enums import Resampling
+    from rasterio.windows import Window
+    from rasterio.warp import transform
     with rasterio.Env(
         GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR",
         GDAL_HTTP_MAX_RETRY="2",
@@ -106,6 +110,7 @@ def read_window(url, lat, lng, radius=8):
 
 
 def calculate_ndvi(scene, lat, lng):
+    import numpy as np
     assets = scene["assets"]
 
     red = read_window(assets["red"]["href"], lat, lng)
@@ -219,9 +224,10 @@ def global_ndvi(
             ),
         }
 
-    except (httpx.HTTPError, rasterio.errors.RasterioError,
+    except (httpx.HTTPError,
             ValueError, KeyError, OSError) as exc:
         raise HTTPException(
             status_code=502,
             detail=f"Satellite processing failed: {exc}",
         ) from exc
+
