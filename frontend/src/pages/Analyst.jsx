@@ -96,13 +96,69 @@ export default function Analyst() {
   const [location, setLocation] = useState(START_LOCATION)
   const [latInput, setLatInput] = useState('12.9716')
   const [lngInput, setLngInput] = useState('77.5946')
+  // GLOBAL_ANALYST_SEARCH_V1
+  const [search, setSearch] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState('')
+  const [mapVersion, setMapVersion] = useState(0)
+
+  async function searchWorld() {
+    const query = search.trim()
+
+    if (query.length < 2) return
+
+    setSearching(true)
+    setSearchError('')
+    setSearchResults([])
+
+    try {
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=en&format=json`
+      )
+
+      if (!response.ok) {
+        throw new Error('Location search unavailable.')
+      }
+
+      const data = await response.json()
+      const results = data.results || []
+
+      setSearchResults(results)
+
+      if (!results.length) {
+        setSearchError('No matching locations found.')
+      }
+    } catch (error) {
+      setSearchError(error.message || 'Search failed.')
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  function chooseSearchResult(place) {
+    selectLocation({
+      name: [
+        place.name,
+        place.admin1,
+        place.country
+      ].filter(Boolean).join(', '),
+      lat: Number(place.latitude),
+      lng: Number(place.longitude)
+    })
+
+    setSearchResults([])
+    setSearch('')
+    setMapVersion(v => v + 1)
+  }
+
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [metadata, setMetadata] = useState(null)
   const [messages, setMessages] = useState([{
     role: 'assistant',
-    text: 'Welcome to KIZUKI AI Analyst. Select a location anywhere in the world and ask me about its historical temperature and rainfall. I use NASA POWER data and an NVIDIA-hosted language model.'
+    text: 'Welcome to KIZUKI Global AI Analyst. Search for any city worldwide, click the map, or enter coordinates. I use NASA POWER climate data and NVIDIA Nemotron to analyze your selected location.'
   }])
 
   const bottomRef = useRef(null)
@@ -275,7 +331,57 @@ export default function Analyst() {
               <h2 className="font-semibold">Location intelligence</h2>
             </div>
 
+            <div className="mb-4 space-y-3">
+              <p className="text-xs text-slate-400">
+                Search any city or town worldwide
+              </p>
+
+              <div className="flex gap-2">
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') searchWorld()
+                  }}
+                  placeholder="Tokyo, London, Nairobi..."
+                  className={inputClass}
+                />
+
+                <button
+                  type="button"
+                  onClick={searchWorld}
+                  disabled={searching || search.trim().length < 2}
+                  className="rounded-xl bg-emerald-400 px-4 text-sm font-semibold text-[#071521] disabled:opacity-50"
+                >
+                  {searching ? '...' : 'Search'}
+                </button>
+              </div>
+
+              {searchError && (
+                <p className="text-xs text-amber-300">
+                  {searchError}
+                </p>
+              )}
+
+              {searchResults.length > 0 && (
+                <div className="max-h-52 space-y-1 overflow-y-auto rounded-xl border border-white/10 bg-[#102734] p-2">
+                  {searchResults.map(place => (
+                    <button
+                      type="button"
+                      key={`${place.id}-${place.latitude}`}
+                      onClick={() => chooseSearchResult(place)}
+                      className="w-full rounded-lg px-3 py-2 text-left text-xs text-slate-200 hover:bg-emerald-400/10 hover:text-emerald-200"
+                    >
+                      {[place.name, place.admin1, place.country]
+                        .filter(Boolean).join(', ')}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <WorldMap
+              key={mapVersion}
               location={location}
               onPick={pickLocation}
             />
