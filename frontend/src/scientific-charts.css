@@ -1,0 +1,102 @@
+/*
+ * KIZUKI Scientific Charts
+ * Consistent presentation for inline Recharts.
+ * Does not modify data or calculations.
+ */
+
+.kizuki-scientific-chart {
+  --chart-grid: #35444b;
+  --chart-text: #94a6a8;
+  --chart-surface: #19262d;
+  --chart-border: #405157;
+  --chart-temperature: #c58b6d;
+  --chart-rainfall: #79b7a5;
+
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Fine, understated gridlines */
+
+.kizuki-scientific-chart .recharts-cartesian-grid line {
+  stroke: var(--chart-grid) !important;
+  stroke-width: 0.65px !important;
+  stroke-dasharray: none !important;
+  opacity: 0.55;
+}
+
+/* Professional axis typography */
+
+.kizuki-scientific-chart .recharts-cartesian-axis-tick text,
+.kizuki-scientific-chart .recharts-label,
+.kizuki-scientific-chart .recharts-legend-item-text {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 10px !important;
+  fill: var(--chart-text) !important;
+  letter-spacing: -0.02em;
+}
+
+.kizuki-scientific-chart .recharts-cartesian-axis-line,
+.kizuki-scientific-chart .recharts-cartesian-axis-tick-line {
+  stroke: var(--chart-grid) !important;
+  stroke-width: 0.65px !important;
+}
+
+/* Remove decorative chart effects */
+
+.kizuki-scientific-chart .recharts-line-curve {
+  stroke-width: 1.8px !important;
+  filter: none !important;
+}
+
+.kizuki-scientific-chart .recharts-area-curve {
+  stroke-width: 1.6px !important;
+  filter: none !important;
+}
+
+.kizuki-scientific-chart .recharts-area-area {
+  fill-opacity: 0.09 !important;
+}
+
+.kizuki-scientific-chart .recharts-bar-rectangle {
+  filter: none !important;
+}
+
+/* Chart interaction */
+
+.kizuki-scientific-chart .recharts-tooltip-cursor {
+  stroke: #789095 !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 3 4 !important;
+}
+
+.kizuki-scientific-chart .recharts-default-tooltip {
+  background: var(--chart-surface) !important;
+  border: 1px solid var(--chart-border) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  padding: 10px 12px !important;
+  color: #e0e8e7 !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+}
+
+.kizuki-scientific-chart .recharts-tooltip-label {
+  color: #e0e8e7 !important;
+  font-weight: 500 !important;
+}
+
+.kizuki-scientific-chart .recharts-tooltip-item {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+}
+
+/* Keep graph surfaces flat */
+
+.kizuki-scientific-chart .recharts-wrapper {
+  filter: none !important;
+}
+
+.kizuki-scientific-chart .recharts-legend-wrapper {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 10px !important;
+}

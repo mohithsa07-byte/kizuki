@@ -545,7 +545,7 @@ export default function ClimateExplorer() {
             </div>
           ) : yearly.some(row => row[chartKey] != null) ? (
             <div className="h-[310px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer className="kizuki-scientific-chart" width="100%" height="100%">
                 <LineChart
                   data={yearly}
                   margin={{ top: 10, right: 20, left: 0, bottom: 5 }}

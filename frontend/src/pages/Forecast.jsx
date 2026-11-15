@@ -555,7 +555,7 @@ export default function Forecast() {
           </div>
         ) : isValid ? (
           <div className="h-[370px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer className="kizuki-scientific-chart" width="100%" height="100%">
               <ComposedChart
                 data={projection.data}
                 margin={{ top: 15, right: 20, left: 0, bottom: 5 }}
