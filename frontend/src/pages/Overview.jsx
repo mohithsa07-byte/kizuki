@@ -1,3 +1,4 @@
+import OverviewHero from '../components/OverviewHero'
 
 import { useMemo, useState, useEffect } from 'react'
 import {
@@ -279,52 +280,12 @@ export default function Overview() {
     <div className="min-h-screen bg-[#07111c] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px] space-y-6">
 
-        {/* Dashboard heading */}
-        <section className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#102638] via-[#0b1a28] to-[#09131e] p-6 sm:p-8">
-          <div className="pointer-events-none absolute -right-16 -top-28 h-72 w-72 rounded-full bg-emerald-400/10 blur-[90px]" />
-          <div className="pointer-events-none absolute -bottom-32 right-1/3 h-64 w-64 rounded-full bg-teal-400/[0.08] blur-[90px]" />
-
-          <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-300">
-                  Climate intelligence platform
-                </p>
-              </div>
-
-              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                Understand our
-                <span className="block text-emerald-300">changing planet.</span>
-              </h1>
-
-              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400">
-                Explore climate patterns, examine historical records and
-                discover what environmental data reveals about our world.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-                <p className="text-[9px] uppercase tracking-[0.18em] text-slate-500">
-                  Selected region
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {selection.name}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-emerald-300/20 bg-emerald-300/[0.07] px-4 py-3">
-                <p className="text-[9px] uppercase tracking-[0.18em] text-emerald-200/70">
-                  Data period
-                </p>
-                <p className="mt-1 text-sm font-semibold text-emerald-200">
-                  {startYear} — {endYear}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Premium KIZUKI Overview */}
+        <OverviewHero
+          selection={selection}
+          startYear={startYear}
+          endYear={endYear}
+        />
 
         {/* Error message */}
         {error && (
