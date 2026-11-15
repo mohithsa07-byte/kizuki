@@ -1,3 +1,4 @@
+import ForecastWorldMap from '../components/ForecastWorldMap'
 import { useMemo, useState } from 'react'
 import {
   BrainCircuit, Thermometer, CloudRain,
@@ -205,7 +206,50 @@ function Stat({ icon: Icon, label, value, detail }) {
 }
 
 export default function Forecast() {
-  const [regionId, setRegionId] = useState('bengaluru-urban')
+  // WORLDWIDE_FORECAST_V1
+  const [location, setLocation] = useState({
+    id: 'bengaluru-urban',
+    name: 'Bengaluru',
+    lat: 12.9716,
+    lng: 77.5946
+  })
+
+  const [latitudeInput, setLatitudeInput] = useState('12.9716')
+  const [longitudeInput, setLongitudeInput] = useState('77.5946')
+
+  function selectLocation(next) {
+    setLocation(next)
+    setLatitudeInput(String(next.lat))
+    setLongitudeInput(String(next.lng))
+  }
+
+  function pickMapLocation(lat, lng) {
+    selectLocation({
+      id: null,
+      name: 'Custom location',
+      lat: Number(lat.toFixed(4)),
+      lng: Number(lng.toFixed(4))
+    })
+  }
+
+  function applyCoordinates() {
+    const lat = Number(latitudeInput)
+    const lng = Number(longitudeInput)
+
+    if (
+      latitudeInput.trim() === '' ||
+      longitudeInput.trim() === '' ||
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng) ||
+      lat < -90 || lat > 90 ||
+      lng < -180 || lng > 180
+    ) {
+      alert('Enter valid latitude (-90 to 90) and longitude (-180 to 180).')
+      return
+    }
+
+    pickMapLocation(lat, lng)
+  }
   const [variable, setVariable] = useState('temperature')
   const [horizon, setHorizon] = useState(2040)
   const [sensitivity, setSensitivity] = useState(0.2)
@@ -215,8 +259,12 @@ export default function Forecast() {
     ? regions.data
     : fallbackRegions
 
+  const locationQuery = location.id
+    ? `region_id=${encodeURIComponent(location.id)}`
+    : `lat=${location.lat.toFixed(4)}&lng=${location.lng.toFixed(4)}`
+
   const climate = useApi(
-    `/api/climate/timeseries?region_id=${encodeURIComponent(regionId)}&start_year=${FIRST_YEAR}&end_year=${LAST_YEAR}`
+    `/api/climate/timeseries?${locationQuery}&start_year=${FIRST_YEAR}&end_year=${LAST_YEAR}`
   )
 
   const annual = useMemo(
@@ -231,9 +279,7 @@ export default function Forecast() {
     [annual, variable, horizon, sensitivity]
   )
 
-  const selectedRegion = regionList.find(
-    item => item.id === regionId
-  )
+  const selectedRegion = location
 
   const unit = variable === 'temperature' ? '°C' : 'mm'
   const decimals = variable === 'temperature' ? 2 : 0
@@ -275,6 +321,73 @@ export default function Forecast() {
         </div>
       </section>
 
+      <section className="space-y-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+            WORLDWIDE FORECAST COVERAGE
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-white">
+            Choose anywhere on Earth
+          </h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Click the map, choose a city preset, or enter coordinates.
+            Historical records are retrieved for the corresponding
+            NASA POWER grid cell.
+          </p>
+        </div>
+
+        <ForecastWorldMap
+          location={location}
+          onPick={pickMapLocation}
+        />
+
+        <div className="grid gap-3 rounded-2xl border border-white/10 bg-[#0d1d2b] p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <label className="space-y-2">
+            <span className="text-xs text-slate-400">
+              Latitude
+            </span>
+            <input
+              type="number"
+              min="-90"
+              max="90"
+              step="any"
+              value={latitudeInput}
+              onChange={e => setLatitudeInput(e.target.value)}
+              className={selectStyle}
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-xs text-slate-400">
+              Longitude
+            </span>
+            <input
+              type="number"
+              min="-180"
+              max="180"
+              step="any"
+              value={longitudeInput}
+              onChange={e => setLongitudeInput(e.target.value)}
+              className={selectStyle}
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={applyCoordinates}
+            className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-semibold text-[#071521] transition hover:bg-emerald-300"
+          >
+            Analyze location
+          </button>
+        </div>
+
+        <p className="text-xs leading-6 text-slate-500">
+          Worldwide coordinate queries are supported by the backend.
+          Coverage and accuracy depend on NASA POWER availability.
+          Its gridded estimates are approximately 50 km scale,
+          not street-level measurements.
+        </p>
+      </section>
       <Panel>
         <div className="mb-5 flex items-center gap-2">
           <Activity size={18} className="text-emerald-300" />
@@ -288,12 +401,20 @@ export default function Forecast() {
             </span>
             <select
               className={selectStyle}
-              value={regionId}
-              onChange={e => setRegionId(e.target.value)}
+              value={location.id || ''}
+              onChange={e => {
+                const region = regionList.find(
+                  item => item.id === e.target.value
+                )
+                if (region) selectLocation(region)
+              }}
             >
+              {!location.id && (
+                <option value="">Custom map location</option>
+              )}
               {regionList.map(region => (
                 <option key={region.id} value={region.id}>
-                  {region.name}
+                  {region.name}, {region.country || ''}
                 </option>
               ))}
             </select>
