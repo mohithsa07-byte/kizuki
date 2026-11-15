@@ -35,3 +35,12 @@ def root():
 
 app.include_router(satellite_ndvi.router)
 
+
+
+@app.get("/api/deployment-check")
+def deployment_check():
+    return {
+        "status": "ok",
+        "commit_marker": "kizuki-ndvi-fixed-443cc3d",
+        "rasterio_removed": True
+    }
