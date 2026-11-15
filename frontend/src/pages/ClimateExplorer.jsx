@@ -1,3 +1,4 @@
+import GlobalClimateHeatmap from '../components/GlobalClimateHeatmap'
 import { useEffect, useMemo, useState } from 'react'
 import {
   MapContainer,
@@ -602,6 +603,8 @@ export default function ClimateExplorer() {
             by themselves establish a long-term climate trend.
           </p>
         </Panel>
+
+        <GlobalClimateHeatmap />
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-5">
           <p className="text-xs text-slate-500">
