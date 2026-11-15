@@ -158,7 +158,7 @@ export default function Analyst() {
   const [metadata, setMetadata] = useState(null)
   const [messages, setMessages] = useState([{
     role: 'assistant',
-    text: 'Welcome to KIZUKI Global AI Analyst. Search for any city worldwide, click the map, or enter coordinates. I use NASA POWER climate data and NVIDIA Nemotron to analyze your selected location.'
+    text: 'Welcome to KIZUKI Global AI Analyst. Just ask about any country or city. I will identify the location automatically, retrieve NASA POWER records, and analyze them with NVIDIA Nemotron. The map is optional.'
   }])
 
   const bottomRef = useRef(null)
@@ -304,7 +304,7 @@ export default function Analyst() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
-            Ask evidence-grounded questions about climate
+            Ask questions about any place on Earth. KIZUKI automatically detects locations and retrieves climate evidence
             anywhere on Earth, powered by NVIDIA Nemotron
             and historical NASA POWER records.
           </p>
@@ -387,7 +387,7 @@ export default function Analyst() {
             />
 
             <p className="mt-3 text-xs text-slate-400">
-              Click anywhere on the map to select a location.
+              Optional: click the map for precise point analysis. Locations mentioned in your question take priority.
             </p>
 
             <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-200">
@@ -447,7 +447,18 @@ export default function Analyst() {
               <div className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-300/[0.05] p-3 text-xs leading-6 text-slate-300">
                 <p>Source: {metadata.source}</p>
                 <p>Coverage: {metadata.years.start}–{metadata.years.end}</p>
-                <p>Complete years: {metadata.years.count}</p>
+                <p>Complete years: {metadata.locations?.[0]?.record_count ?? '—'}</p>
+                {metadata.locations?.map((place, index) => (
+                  <div key={index} className="mt-2 border-t border-white/10 pt-2">
+                    <p className="text-emerald-200">{place.name}</p>
+                    <p>{place.lat.toFixed(3)}, {place.lng.toFixed(3)}</p>
+                    {place.is_country && (
+                      <p className="mt-1 text-amber-300">
+                        Representative point, not a national average
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -523,7 +534,7 @@ export default function Analyst() {
                     send()
                   }
                 }}
-                placeholder="Ask about climate change anywhere on Earth..."
+                placeholder="Ask about Nigeria, Tokyo, Brazil vs India, or anywhere..."
                 className="min-w-0 flex-1 resize-none rounded-xl border border-white/10 bg-[#081722] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-emerald-300/40"
               />
 
