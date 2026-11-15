@@ -1,0 +1,241 @@
+/* KIZUKI — Research Edition
+   Editorial climate intelligence design system
+   Non-destructive visual layer.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&display=swap');
+
+:root {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-synthesis: none;
+
+  --research-canvas: #101820;
+  --research-surface: #19262d;
+  --research-surface-raised: #203039;
+  --research-text: #e0e8e7;
+  --research-muted: #94a6a8;
+  --research-line: #35444b;
+  --research-accent: #79b7a5;
+  --research-warm: #c58b6d;
+}
+
+html {
+  font-family: 'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body,
+#root {
+  background-color: var(--research-canvas);
+  color: var(--research-text);
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  letter-spacing: -0.025em;
+}
+
+h1 {
+  font-weight: 600;
+}
+
+h2, h3 {
+  font-weight: 550;
+}
+
+p {
+  line-height: 1.65;
+}
+
+/* Preserve layout and functionality while quieting
+   the previous navy / glowing visual language. */
+
+.bg-navy-950,
+.bg-navy-900 {
+  background-color: var(--research-canvas) !important;
+}
+
+.bg-navy-800,
+.bg-navy-700 {
+  background-color: var(--research-surface) !important;
+}
+
+.text-emerald-glow {
+  color: var(--research-accent) !important;
+}
+
+.border-emerald-glow {
+  border-color: var(--research-accent) !important;
+}
+
+/* Data typography */
+
+.recharts-wrapper,
+.recharts-surface {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+}
+
+.recharts-cartesian-axis-tick text,
+.recharts-cartesian-axis-tick-value,
+.recharts-label,
+.recharts-legend-item-text {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  fill: #91a4a6 !important;
+  letter-spacing: -0.025em;
+}
+
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: #35444b !important;
+  stroke-width: 0.65px !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #35444b !important;
+  stroke-width: 0.65px !important;
+  stroke-dasharray: none !important;
+  opacity: 0.65;
+}
+
+/* Cleaner chart curves and points */
+
+.recharts-line-curve {
+  stroke-width: 1.8px !important;
+  filter: none !important;
+}
+
+.recharts-area-curve {
+  stroke-width: 1.6px !important;
+  filter: none !important;
+}
+
+.recharts-line-dots circle,
+.recharts-area-dots circle {
+  stroke-width: 1px;
+}
+
+.recharts-active-dot circle {
+  stroke-width: 1.5px;
+}
+
+.recharts-bar-rectangle path {
+  filter: none !important;
+}
+
+/* More understated chart hover state */
+
+.recharts-tooltip-cursor {
+  stroke: #7c9697 !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 3 4 !important;
+  fill: rgba(121, 183, 165, 0.05) !important;
+}
+
+.recharts-default-tooltip {
+  background: #1b292f !important;
+  border: 1px solid #405157 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18) !important;
+  padding: 10px 12px !important;
+  color: #e0e8e7 !important;
+}
+
+.recharts-tooltip-label {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+  color: #e0e8e7 !important;
+}
+
+.recharts-tooltip-item {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+}
+
+.recharts-legend-wrapper {
+  font-size: 11px !important;
+}
+
+/* Quiet the exaggerated card treatment */
+
+.shadow-xl,
+.shadow-2xl {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10) !important;
+}
+
+.backdrop-blur-xl {
+  backdrop-filter: blur(8px);
+}
+
+/* Less playful geometry */
+
+.rounded-3xl {
+  border-radius: 16px !important;
+}
+
+.rounded-2xl {
+  border-radius: 12px !important;
+}
+
+.rounded-xl {
+  border-radius: 9px !important;
+}
+
+/* Consistent form fields */
+
+input,
+select,
+textarea {
+  letter-spacing: 0;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #778b8f;
+}
+
+/* Accessible keyboard focus */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--research-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbars */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #41565c transparent;
+}
+
+/* Prefer calm transitions */
+
+button,
+a,
+input,
+select {
+  transition-duration: 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
