@@ -136,6 +136,124 @@ function SatellitePanel({ title, year, data, location }) {
   )
 }
 
+function SatelliteComparisonSlider({ before, after, location, beforeYear, afterYear }) {
+  const [position, setPosition] = useState(50)
+  const [beforeError, setBeforeError] = useState(false)
+  const [afterError, setAfterError] = useState(false)
+
+  const beforeUrl = before?.scene_id
+    ? getImageUrl(before.scene_id, location)
+    : ''
+
+  const afterUrl = after?.scene_id
+    ? getImageUrl(after.scene_id, location)
+    : ''
+
+  if (!beforeUrl || !afterUrl) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-[#0d1c29] p-6 text-sm text-slate-400">
+        Both satellite observations are required for the comparison slider.
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-emerald-400/20 bg-[#0d1c29]">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-5">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-emerald-400">
+            Interactive satellite comparison
+          </p>
+          <h3 className="mt-2 text-xl font-semibold text-white">
+            Drag to reveal Earth's changes
+          </h3>
+        </div>
+        <span className="text-xs text-slate-400">
+          Sentinel-2 true-colour imagery
+        </span>
+      </div>
+
+      <div className="relative aspect-[7/5] w-full overflow-hidden bg-[#07111b]">
+        {!afterError && (
+          <img
+            src={afterUrl}
+            alt={`Satellite observation from ${afterYear}`}
+            className="absolute inset-0 h-full w-full object-fill"
+            draggable={false}
+            onError={() => setAfterError(true)}
+          />
+        )}
+
+        {!beforeError && (
+          <img
+            src={beforeUrl}
+            alt={`Satellite observation from ${beforeYear}`}
+            className="absolute inset-0 h-full w-full object-fill"
+            style={{
+              clipPath: `inset(0 ${100 - position}% 0 0)`
+            }}
+            draggable={false}
+            onError={() => setBeforeError(true)}
+          />
+        )}
+
+        {(beforeError || afterError) && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#07111b]/95 p-6 text-center text-sm text-slate-300">
+            One or both satellite images could not be loaded.
+            The comparison is unavailable.
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute left-3 top-3 rounded-lg bg-[#06121b]/85 px-3 py-2 text-xs font-semibold text-white">
+          BEFORE · {before?.scene_date?.slice(0, 10) || beforeYear}
+        </div>
+
+        <div className="pointer-events-none absolute right-3 top-3 rounded-lg bg-[#06121b]/85 px-3 py-2 text-xs font-semibold text-white">
+          AFTER · {after?.scene_date?.slice(0, 10) || afterYear}
+        </div>
+
+        {!beforeError && !afterError && (
+          <>
+            <div
+              className="pointer-events-none absolute inset-y-0 z-10 w-[3px] bg-white shadow-[0_0_15px_rgba(255,255,255,0.7)]"
+              style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+            />
+
+            <div
+              className="pointer-events-none absolute top-1/2 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-white bg-emerald-400 text-[#06121b] shadow-xl"
+              style={{ left: `${position}%` }}
+            >
+              <ArrowLeftRight size={20} />
+            </div>
+
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={position}
+              onChange={e => setPosition(Number(e.target.value))}
+              aria-label="Reveal before and after satellite imagery"
+              className="absolute inset-0 z-10 h-full w-full cursor-ew-resize opacity-0"
+            />
+          </>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 p-4 text-xs text-slate-400">
+        <span>← Earlier observation</span>
+        <span>{position}% revealed</span>
+        <span>Later observation →</span>
+      </div>
+
+      <p className="px-4 pb-4 text-xs leading-relaxed text-slate-500">
+        Both images show the same geographic bounding box.
+        Differences may reflect seasonal conditions, lighting,
+        atmosphere or land-cover changes. Satellite observations
+        are not necessarily from the same day of the year.
+      </p>
+    </div>
+  )
+}
 export default function EarthTimeMachine({ location }) {
   const [beforeYear, setBeforeYear] = useState(2018)
   const [afterYear, setAfterYear] = useState(2024)
@@ -274,6 +392,15 @@ export default function EarthTimeMachine({ location }) {
               location={location}
             />
           </div>
+
+          <SatelliteComparisonSlider
+            key={selectionKey}
+            before={before}
+            after={after}
+            location={location}
+            beforeYear={beforeYear}
+            afterYear={afterYear}
+          />
 
           <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.05] p-5">
             <p className="text-sm text-slate-400">
