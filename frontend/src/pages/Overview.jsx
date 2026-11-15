@@ -540,31 +540,71 @@ export default function Overview() {
                 Select a supported region to load its climate records.
               </p>
 
-              <div className="mt-5 space-y-2">
-                {cityList.length ? (
-                  cityList.map((region) => (
-                    <button
-                      key={region.id}
-                      type="button"
-                      onClick={() => pickRegion(region)}
-                      className={`flex w-full items-center justify-between rounded-xl border px-3 py-3 text-left transition ${
-                        selection.type === 'region' &&
-                        selection.id === region.id
-                          ? 'border-emerald-300/30 bg-emerald-300/[0.08] text-emerald-200'
-                          : 'border-white/[0.07] bg-white/[0.02] text-slate-300 hover:border-white/20 hover:bg-white/[0.04]'
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{region.name}</span>
-                      <span className="text-xs opacity-60">↗</span>
-                    </button>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-500">
-                    Loading available regions…
-                  </p>
-                )}
-              </div>
+              <div className="mt-5">
+                <label
+                  htmlFor="kizuki-region-select"
+                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500"
+                >
+                  Selected city
+                </label>
 
+                <div className="relative">
+                  <select
+                    id="kizuki-region-select"
+                    value={
+                      selection.type === 'region'
+                        ? selection.id
+                        : ''
+                    }
+                    onChange={(event) => {
+                      const region = cityList.find(
+                        (item) => String(item.id) === event.target.value
+                      )
+
+                      if (region) pickRegion(region)
+                    }}
+                    className="w-full cursor-pointer appearance-none rounded-xl border border-emerald-300/20 bg-[#102630] px-4 py-3.5 pr-11 text-sm font-semibold text-emerald-200 outline-none transition hover:border-emerald-300/40 focus:border-emerald-300/60"
+                  >
+                    {selection.type !== 'region' && (
+                      <option value="" disabled>
+                        Custom map location
+                      </option>
+                    )}
+
+                    {cityList.length === 0 && (
+                      <option value="" disabled>
+                        Loading regions...
+                      </option>
+                    )}
+
+                    {cityList.map((region) => (
+                      <option
+                        key={region.id}
+                        value={region.id}
+                        className="bg-[#10202d] text-white"
+                      >
+                        {region.name}
+                        {region.country ? `, ${region.country}` : ''}
+                      </option>
+                    ))}
+                  </select>
+
+                  <svg
+                    className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-300"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
+
+                <p className="mt-3 text-[11px] leading-5 text-slate-500">
+                  Choose a region to update the map, temperature,
+                  rainfall and satellite observations.
+                </p>
+              </div>
               <div className="mt-6 border-t border-white/[0.08] pt-5">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Selected coordinates
