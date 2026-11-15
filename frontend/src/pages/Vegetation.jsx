@@ -1,4 +1,5 @@
-﻿import GlobalSatelliteExplorer from '../components/GlobalSatelliteExplorer'
+﻿import GlobalNDVI from '../components/GlobalNDVI'
+import GlobalSatelliteExplorer from '../components/GlobalSatelliteExplorer'
 
 export default function Vegetation() {
   return (
@@ -18,6 +19,8 @@ export default function Vegetation() {
 
       <GlobalSatelliteExplorer />
 
+      <GlobalNDVI />
+
       <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-5">
         <h2 className="text-base font-semibold text-white">
           Upcoming: Satellite NDVI analysis
@@ -33,3 +36,4 @@ export default function Vegetation() {
     </div>
   )
 }
+

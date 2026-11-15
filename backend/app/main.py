@@ -2,7 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routes import climate, health, ndvi, regions, satellite
+from app.routes import climate, health, ndvi, regions, satellite, satellite_ndvi
 
 app = FastAPI(
     title="KIZUKI API",
@@ -32,3 +32,6 @@ def root():
         "version": "0.4.0",
         "docs": "/docs",
     }
+
+app.include_router(satellite_ndvi.router)
+
