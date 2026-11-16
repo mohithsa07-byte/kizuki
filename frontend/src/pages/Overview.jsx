@@ -110,7 +110,7 @@ function buildInsights(monthly) {
 
     insights.push({
       title: 'Temperature pattern',
-      description: `${hottest.month} is the warmest month on average at ${hottest.temp} °C. ${coolest.month} is the coolest at ${coolest.temp} °C.`,
+      description: `${hottest.month} is the warmest month on average at ${hottest.temp} Â°C. ${coolest.month} is the coolest at ${coolest.temp} Â°C.`,
     })
   }
 
@@ -168,7 +168,7 @@ function StatusTag({ children, type = 'real' }) {
 
 function MetricCard({ label, value, unit, description, status }) {
   return (
-    <div className="group rounded-2xl border border-white/[0.08] bg-[#0c1724]/90 p-4 transition duration-300 hover:border-emerald-300/25 hover:bg-[#101e2d] sm:p-5">
+    <div className="obs-metric group p-4 sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
           {label}
@@ -176,7 +176,7 @@ function MetricCard({ label, value, unit, description, status }) {
         <span
           className={`mt-1 h-2 w-2 rounded-full ${
             ['NASA POWER', 'Sentinel-2', 'Open-Meteo'].includes(status)
-              ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]'
+              ? 'bg-[#79b7a5]'
               : 'bg-slate-600'
           }`}
         />
@@ -203,7 +203,7 @@ function MetricCard({ label, value, unit, description, status }) {
 
 function SectionHeading({ eyebrow, title, detail }) {
   return (
-    <div className="mb-4">
+    <div className="obs-section-heading mb-4">
       <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
         {eyebrow}
       </p>
@@ -435,7 +435,7 @@ export default function Overview() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07111c] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+    <div className="obs-overview min-h-screen bg-[#101820] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px] space-y-6">
 
         {/* Premium KIZUKI Overview */}
@@ -457,21 +457,21 @@ export default function Overview() {
           <SectionHeading
             eyebrow="Environmental snapshot"
             title="Climate at a glance"
-            detail={loading ? 'Updating data…' : 'Historical period average'}
+            detail={loading ? 'Updating dataâ€¦' : 'Historical period average'}
           />
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Mean air temperature"
-              value={temperature !== null ? temperature : loading ? '…' : 'N/A'}
-              unit="°C"
+              value={temperature !== null ? temperature : loading ? 'â€¦' : 'N/A'}
+              unit="Â°C"
               description="Air temperature at 2 metres"
               status={summaryData ? 'NASA POWER' : 'Unavailable'}
             />
 
             <MetricCard
               label="Mean annual rainfall"
-              value={rainfall !== null ? rainfall : loading ? '…' : 'N/A'}
+              value={rainfall !== null ? rainfall : loading ? 'â€¦' : 'N/A'}
               unit="mm"
               description="Annualised precipitation"
               status={summaryData ? 'NASA POWER' : 'Unavailable'}
@@ -488,7 +488,7 @@ export default function Overview() {
               }
               description={
                 measuredNDVI != null
-                  ? `Point NDVI · ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
+                  ? `Point NDVI Â· ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
                   : overviewNDVI.loading
                     ? 'Loading Sentinel-2 observation'
                     : 'No valid 2024 point observation'
@@ -513,7 +513,7 @@ export default function Overview() {
               }
               description={
                 overviewAQI.value != null
-                  ? `${aqiCategory} · US AQI · ${overviewAQI.time || 'Current estimate'}`
+                  ? `${aqiCategory} Â· US AQI Â· ${overviewAQI.time || 'Current estimate'}`
                   : overviewAQI.loading
                     ? 'Loading air quality estimate'
                     : 'Air quality data unavailable'
@@ -538,7 +538,7 @@ export default function Overview() {
           />
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-            <div className="relative h-[380px] overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0b1723] sm:h-[480px]">
+            <div className="obs-map-frame relative h-[380px] overflow-hidden sm:h-[480px]">
               <MapContainer
                 center={[20, 10]}
                 zoom={2}
@@ -566,8 +566,8 @@ export default function Overview() {
                     center={[region.lat, region.lng]}
                     radius={selection.id === region.id ? 7 : 5}
                     pathOptions={{
-                      color: '#d1fae5',
-                      fillColor: '#34d399',
+                      color: '#d6e8df',
+                      fillColor: '#79b7a5',
                       fillOpacity: 0.9,
                       weight: 1,
                     }}
@@ -590,7 +590,7 @@ export default function Overview() {
                   radius={10}
                   pathOptions={{
                     color: '#ffffff',
-                    fillColor: '#10b981',
+                    fillColor: '#79b7a5',
                     fillOpacity: 1,
                     weight: 2,
                   }}
@@ -626,7 +626,7 @@ export default function Overview() {
               </div>
             </div>
 
-            <aside className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5">
+            <aside className="obs-research-panel p-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
                 Location controls
               </p>
@@ -662,7 +662,7 @@ export default function Overview() {
 
                       if (region) pickRegion(region)
                     }}
-                    className="w-full cursor-pointer appearance-none rounded-xl border border-emerald-300/20 bg-[#102630] px-4 py-3.5 pr-11 text-sm font-semibold text-emerald-200 outline-none transition hover:border-emerald-300/40 focus:border-emerald-300/60"
+                    className="w-full cursor-pointer appearance-none obs-select px-4 py-3.5 pr-11 text-sm font-semibold text-emerald-200 outline-none transition hover:border-emerald-300/40 focus:border-emerald-300/60"
                   >
                     {selection.type !== 'region' && (
                       <option value="" disabled>
@@ -709,7 +709,7 @@ export default function Overview() {
                   Selected coordinates
                 </p>
                 <p className="mt-2 font-mono text-xs text-slate-300">
-                  {selection.lat.toFixed(4)}°, {selection.lng.toFixed(4)}°
+                  {selection.lat.toFixed(4)}Â°, {selection.lng.toFixed(4)}Â°
                 </p>
                 <button
                   type="button"
@@ -732,7 +732,7 @@ export default function Overview() {
           />
 
           <div className="grid gap-4 xl:grid-cols-2">
-            <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#0c1724] p-4 sm:p-5">
+            <div className="min-w-0 obs-research-panel p-4 sm:p-5">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h3 className="text-sm font-semibold text-white">
@@ -747,7 +747,7 @@ export default function Overview() {
 
               {loading && (
                 <p className="py-12 text-center text-xs text-slate-500">
-                  Loading climate records…
+                  Loading climate recordsâ€¦
                 </p>
               )}
 
@@ -762,7 +762,7 @@ export default function Overview() {
               )}
             </div>
 
-            <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-[#0c1724] p-4 sm:p-5">
+            <div className="min-w-0 obs-research-panel p-4 sm:p-5">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h3 className="text-sm font-semibold text-white">
@@ -777,7 +777,7 @@ export default function Overview() {
 
               {loading && (
                 <p className="py-12 text-center text-xs text-slate-500">
-                  Loading yearly trends…
+                  Loading yearly trendsâ€¦
                 </p>
               )}
 
@@ -807,10 +807,10 @@ export default function Overview() {
               insights.map((insight) => (
                 <div
                   key={insight.title}
-                  className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5"
+                  className="obs-research-panel p-5"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#79b7a5]" />
                     <h3 className="text-sm font-semibold text-white">
                       {insight.title}
                     </h3>
@@ -821,9 +821,9 @@ export default function Overview() {
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5 text-sm text-slate-500">
+              <div className="obs-research-panel p-5 text-sm text-slate-500">
                 {loading
-                  ? 'Analysing the selected climate records…'
+                  ? 'Analysing the selected climate recordsâ€¦'
                   : 'Insights will appear when climate records are available.'}
               </div>
             )}
@@ -832,7 +832,7 @@ export default function Overview() {
 
         {/* Period and methodology */}
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5">
+          <div className="obs-research-panel p-5">
             <SectionHeading
               eyebrow="Time controls"
               title="Choose analysis period"
@@ -876,7 +876,7 @@ export default function Overview() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-[#0c1724] p-5">
+          <div className="obs-research-panel p-5">
             <SectionHeading
               eyebrow="Methodology"
               title="Know your data"
@@ -894,7 +894,7 @@ export default function Overview() {
               </p>
               <p>
                 <strong className="text-slate-200">Spatial resolution:</strong>{' '}
-                Approximately 0.5° × 0.625° grid cells, around 50 km. These
+                Approximately 0.5Â° Ã— 0.625Â° grid cells, around 50 km. These
                 values do not represent precise neighbourhood measurements.
               </p>
               <p>
@@ -907,7 +907,7 @@ export default function Overview() {
         </section>
 
         <footer className="border-t border-white/[0.07] py-4 text-center text-[10px] tracking-wide text-slate-600">
-          KIZUKI · SEE THE CHANGE. UNDERSTAND THE CAUSE. PREDICT THE FUTURE.
+          KIZUKI Â· SEE THE CHANGE. UNDERSTAND THE CAUSE. PREDICT THE FUTURE.
         </footer>
       </div>
     </div>

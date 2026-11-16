@@ -1,0 +1,281 @@
+/*
+  KIZUKI Scientific Observatory
+  Overview visual system
+*/
+
+:root {
+  --obs-base: #101820;
+  --obs-surface: #19262d;
+  --obs-raised: #203039;
+  --obs-border: #35444b;
+  --obs-text: #e7eae5;
+  --obs-muted: #9dadad;
+  --obs-sage: #79b7a5;
+  --obs-copper: #c58b6d;
+}
+
+.obs-overview {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background: var(--obs-base);
+}
+
+.obs-overview .obs-hero {
+  background: #152128;
+  border: 1px solid var(--obs-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.obs-hero-top,
+.obs-hero-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .07em;
+  color: var(--obs-muted);
+}
+
+.obs-hero-top {
+  border-bottom: 1px solid var(--obs-border);
+}
+
+.obs-hero-bottom {
+  border-top: 1px solid var(--obs-border);
+}
+
+.obs-hero-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+  gap: 40px;
+  align-items: center;
+  padding: 50px 32px;
+}
+
+.obs-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .17em;
+  color: var(--obs-sage);
+}
+
+.obs-hero-title {
+  margin-top: 14px;
+  color: var(--obs-text);
+  font-size: clamp(40px, 5vw, 70px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -.045em;
+}
+
+.obs-hero-description {
+  max-width: 520px;
+  margin-top: 20px;
+  color: var(--obs-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.obs-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.obs-action-primary,
+.obs-action-secondary {
+  display: inline-flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color .15s ease;
+}
+
+.obs-action-primary {
+  background: var(--obs-sage);
+  color: #101820;
+}
+
+.obs-action-primary:hover {
+  background: #9ccbbb;
+}
+
+.obs-action-secondary {
+  border: 1px solid var(--obs-border);
+  color: var(--obs-text);
+}
+
+.obs-action-secondary:hover {
+  background: var(--obs-raised);
+}
+
+.obs-observation-panel {
+  padding: 24px;
+  border: 1px solid var(--obs-border);
+  background: var(--obs-base);
+}
+
+.obs-panel-label,
+.obs-observation-row,
+.obs-observation-coordinate {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .04em;
+}
+
+.obs-panel-label {
+  color: var(--obs-sage);
+  letter-spacing: .13em;
+}
+
+.obs-observation-name {
+  margin-top: 18px;
+  color: var(--obs-text);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -.03em;
+}
+
+.obs-observation-coordinate {
+  margin-top: 8px;
+  color: var(--obs-muted);
+}
+
+.obs-observation-rule {
+  height: 1px;
+  margin: 24px 0 12px;
+  background: var(--obs-border);
+}
+
+.obs-observation-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  color: var(--obs-muted);
+}
+
+.obs-observation-row strong {
+  color: var(--obs-text);
+  font-weight: 500;
+  text-align: right;
+}
+
+.obs-metric {
+  min-width: 0;
+  border: 1px solid var(--obs-border);
+  border-radius: 5px;
+  background: var(--obs-surface);
+  box-shadow: none;
+  transition: border-color .15s ease;
+}
+
+.obs-metric:hover {
+  border-color: #64877e;
+}
+
+.obs-metric .font-display {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.05em;
+}
+
+.obs-section-heading {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--obs-border);
+}
+
+.obs-section-heading > p:first-child {
+  color: var(--obs-sage);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.obs-section-heading h2 {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -.025em;
+}
+
+.obs-research-panel {
+  min-width: 0;
+  border: 1px solid var(--obs-border);
+  border-radius: 5px;
+  background: var(--obs-surface);
+}
+
+.obs-map-frame {
+  border: 1px solid var(--obs-border);
+  border-radius: 5px;
+  background: var(--obs-base);
+}
+
+.obs-select {
+  border: 1px solid var(--obs-border);
+  border-radius: 4px;
+  background: var(--obs-base);
+  color: var(--obs-text);
+}
+
+.obs-select:focus-visible,
+.obs-overview button:focus-visible,
+.obs-overview a:focus-visible {
+  outline: 2px solid var(--obs-sage);
+  outline-offset: 2px;
+}
+
+.obs-overview .leaflet-control-zoom a {
+  background: var(--obs-surface) !important;
+  color: var(--obs-text) !important;
+  border-color: var(--obs-border) !important;
+}
+
+@media (max-width: 900px) {
+  .obs-hero-content {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .obs-hero-top,
+  .obs-hero-bottom {
+    padding: 13px 16px;
+  }
+
+  .obs-hero-content {
+    padding: 28px 18px;
+  }
+
+  .obs-observation-panel {
+    padding: 18px;
+  }
+
+  .obs-hero-title {
+    font-size: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-overview *,
+  .obs-overview *::before,
+  .obs-overview *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
