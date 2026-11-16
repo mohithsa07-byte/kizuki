@@ -356,7 +356,7 @@ export default function GlobalClimateHeatmap() {
           className="h-full w-full"
         >
           <TileLayer
-            url="https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="© OpenStreetMap contributors"
             className="osm-dark"
             noWrap
