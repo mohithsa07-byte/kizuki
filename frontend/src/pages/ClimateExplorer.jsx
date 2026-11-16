@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
+  WMSTileLayer,
   CircleMarker,
   Tooltip,
   useMap,
@@ -377,6 +378,19 @@ export default function ClimateExplorer() {
                 className=''
               />
 
+              {/* KIZUKI PS15 VERIFIED MAP LAYER: NASA MODIS Terra July daytime
+                  land-surface temperature; NOT NASA POWER air temperature. */}
+              {layer === 'temperature' && (
+                <WMSTileLayer
+                  key={`modis-${year}`}
+                  url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+                  layers="MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day"
+                  format="image/png" transparent opacity={0.82}
+                  version="1.1.1" time={`${year}-07-15`}
+                  attribution="NASA GIBS · MODIS Terra July daytime LST"
+                />
+              )}
+
               <ZoomControl position="bottomright" />
 
               <MapEvents onSelect={setLocation} />
@@ -419,6 +433,17 @@ export default function ClimateExplorer() {
                 <Tooltip>{location.name}</Tooltip>
               </CircleMarker>
             </MapContainer>
+
+            <div className="pointer-events-none absolute right-4 top-4 z-[500] max-w-[220px] rounded-xl border border-white/10 bg-[#071521]/90 px-3 py-2 backdrop-blur-xl">
+              <p className="text-xs font-semibold text-white">
+                {layer === 'temperature' ? `Satellite surface temperature · July ${year}` : `Annual rainfall · ${year}`}
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-slate-300">
+                {layer === 'temperature'
+                  ? 'NASA MODIS imagery; surface temperature, not 2 m air temperature.'
+                  : 'NASA POWER rainfall is shown for the selected location, not as a global rainfall raster.'}
+              </p>
+            </div>
 
             <div className="pointer-events-none absolute left-4 top-4 z-[500] rounded-xl border border-white/10 bg-[#071521]/90 px-4 py-3 backdrop-blur-xl">
               <p className="text-[10px] uppercase tracking-widest text-emerald-300">
@@ -493,11 +518,13 @@ export default function ClimateExplorer() {
             </div>
 
             <p className="mt-7 text-xs leading-6 text-slate-500">
-              Climate values represent NASA POWER gridded
-              historical estimates, not precise street-level
-              sensor measurements. Map markers identify
-              supported locations; they are not a global
-              temperature or rainfall heatmap.
+              Climate values represent NASA POWER gridded historical
+              estimates, not street-level sensors. With Temperature
+              selected, the map additionally shows a July NASA MODIS
+              land-surface-temperature satellite layer for {year}.
+              This differs from annual mean air temperature in the
+              charts. Rainfall remains a location-based statistic;
+              no rainfall raster is implied.
             </p>
           </Panel>
         </div>
