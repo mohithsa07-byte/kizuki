@@ -305,7 +305,7 @@ export default function Forecast() {
           </p>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-            Climate Forecast Lab
+            Climate Projection Lab
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
@@ -324,7 +324,7 @@ export default function Forecast() {
       <section className="space-y-4">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-            WORLDWIDE FORECAST COVERAGE
+            GLOBAL OBSERVATION COVERAGE
           </p>
           <h2 className="mt-2 text-xl font-semibold text-white">
             Choose anywhere on Earth
@@ -391,7 +391,7 @@ export default function Forecast() {
       <Panel>
         <div className="mb-5 flex items-center gap-2">
           <Activity size={18} className="text-emerald-300" />
-          <h2 className="font-semibold">Prediction controls</h2>
+          <h2 className="font-semibold">Projection assumptions</h2>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -521,7 +521,7 @@ export default function Forecast() {
         />
         <Stat
           icon={Activity}
-          label="Projected difference"
+          label="Baseline vs last observed"
           value={isValid
             ? `${change >= 0 ? '+' : ''}${number(change, decimals)} ${unit}`
             : 'N/A'}
@@ -533,7 +533,7 @@ export default function Forecast() {
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-              Historical and projected climate
+              Historical record / trend extension
             </p>
             <h2 className="mt-2 text-xl font-semibold">
               {selectedRegion?.name || 'Selected region'} · {variable}
@@ -544,7 +544,7 @@ export default function Forecast() {
           </div>
 
           <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-xs text-emerald-300">
-            Statistical baseline
+            Exploratory model · not a climate scenario
           </span>
         </div>
 

@@ -208,7 +208,7 @@ export default function ClimateExplorer() {
               </p>
 
               <h1 className="mt-4 font-display text-3xl font-semibold text-white sm:text-5xl">
-                Climate Explorer
+                Climate Observatory
               </h1>
 
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
@@ -233,7 +233,7 @@ export default function ClimateExplorer() {
           <div className="mb-5 flex items-center gap-2">
             <CalendarDays size={18} className="text-emerald-300" />
             <h2 className="font-semibold text-white">
-              Exploration controls
+              Observation parameters
             </h2>
           </div>
 
@@ -421,7 +421,7 @@ export default function ClimateExplorer() {
 
           <Panel>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-              Location intelligence
+              Observation station
             </p>
 
             <h2 className="mt-3 font-display text-2xl font-semibold text-white">
@@ -524,7 +524,7 @@ export default function ClimateExplorer() {
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-                Historical analysis
+                Time-series intelligence
               </p>
               <h2 className="mt-2 font-display text-xl font-semibold text-white">
                 {layer === 'temperature'

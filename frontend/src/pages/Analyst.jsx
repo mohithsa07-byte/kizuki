@@ -11,7 +11,7 @@ import {
 } from 'react-leaflet'
 
 const API_BASE =
-  import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+  (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000' : 'https://kizuki-eta.vercel.app')).replace(/\/+$/, '')
 
 const START_LOCATION = {
   name: 'Bengaluru',
@@ -300,7 +300,7 @@ export default function Analyst() {
           </p>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
-            AI Climate Analyst
+            Climate Research Copilot
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
@@ -328,7 +328,7 @@ export default function Analyst() {
           <div className="rounded-2xl border border-white/[0.08] bg-[#0d1d2b] p-5">
             <div className="mb-4 flex items-center gap-2">
               <Globe2 size={18} className="text-emerald-300" />
-              <h2 className="font-semibold">Location intelligence</h2>
+              <h2 className="font-semibold">Research location</h2>
             </div>
 
             <div className="mb-4 space-y-3">
@@ -434,7 +434,7 @@ export default function Analyst() {
           <div className="rounded-2xl border border-white/[0.08] bg-[#0d1d2b] p-5">
             <div className="flex items-center gap-2">
               <Database size={18} className="text-emerald-300" />
-              <h3 className="font-semibold">Data grounding</h3>
+              <h3 className="font-semibold">Evidence & provenance</h3>
             </div>
 
             <p className="mt-3 text-xs leading-6 text-slate-400">
@@ -471,9 +471,9 @@ export default function Analyst() {
                 <BrainCircuit size={21} className="text-emerald-300" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold">KIZUKI Intelligence</h2>
+                <h2 className="text-sm font-semibold">KIZUKI / Research session</h2>
                 <p className="text-[11px] text-slate-400">
-                  NVIDIA-hosted climate assistant
+                  Nemotron + NASA POWER evidence
                 </p>
               </div>
             </div>
@@ -534,7 +534,7 @@ export default function Analyst() {
                     send()
                   }
                 }}
-                placeholder="Ask about Nigeria, Tokyo, Brazil vs India, or anywhere..."
+                placeholder="Ask about climate history, trends, or locations..."
                 className="min-w-0 flex-1 resize-none rounded-xl border border-white/10 bg-[#081722] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-emerald-300/40"
               />
 
