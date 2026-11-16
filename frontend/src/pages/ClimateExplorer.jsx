@@ -241,7 +241,20 @@ export default function ClimateExplorer() {
             </h2>
           </div>
 
-          {layer === 'sea-ice' && (
+                        {/* KIZUKI SENTINEL-2 LAYER */}
+              {layer === 'sentinel-2' && (
+                <WMSTileLayer
+                  key="kizuki-sentinel-2"
+                  url="https://tiles.maps.eox.at/map"
+                  layers="s2cloudless"
+                  format="image/png"
+                  transparent={false}
+                  opacity={1}
+                  version="1.1.1"
+                  attribution="Sentinel-2 imagery - EOX / Copernicus"
+                />
+              )}
+{layer === 'sea-ice' && (
           <Panel>
             <p className="text-sm font-semibold text-white">Sea ice concentration Ã‚Â· satellite visualization</p>
             <p className="mt-2 text-xs leading-6 text-slate-400">
@@ -384,7 +397,17 @@ export default function ClimateExplorer() {
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
           <div className="relative h-[430px] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1723] sm:h-[540px]">
-            <MapContainer
+                        {/* KIZUKI SENTINEL-2 SELECTOR */}
+            <div className="absolute bottom-4 left-4 z-[1000] rounded-xl border border-emerald-400/30 bg-[#071521]/95 p-3 shadow-xl">
+              <button
+                type="button"
+                onClick={() => setLayer(layer === 'sentinel-2' ? 'temperature' : 'sentinel-2')}
+                className="rounded-lg bg-emerald-400 px-3 py-2 text-xs font-bold text-slate-950"
+              >
+                {layer === 'sentinel-2' ? 'Sentinel-2 ON' : 'View Sentinel-2'}
+              </button>
+            </div>
+<MapContainer
               center={[20, 10]}
               zoom={2}
               minZoom={2}
@@ -444,7 +467,20 @@ export default function ClimateExplorer() {
               <ZoomControl position="bottomright" />
 
               <MapEvents onSelect={setLocation} />
-              {layer === 'sea-ice' ? (
+                            {layer === 'sentinel-2' ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-white">
+                    Sentinel-2 satellite imagery
+                  </p>
+                  <p className="text-xs leading-5 text-slate-300">
+                    True-colour Sentinel-2 cloudless mosaic.
+                    This is not a single-date L2A scene.
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    Source: Copernicus / EOX
+                  </p>
+                </div>
+              ) : layer === 'sea-ice' ? (
                 <MapCamera location={{lat: hemisphere === 'arctic' ? 78 : -75, lng: 0}} />
               ) : (
                 <MapCamera location={location} />
