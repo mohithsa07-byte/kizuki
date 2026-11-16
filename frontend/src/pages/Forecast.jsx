@@ -1,3 +1,4 @@
+import AIProjectionInsight from '../components/AIProjectionInsight'
 import ForecastWorldMap from '../components/ForecastWorldMap'
 import { useMemo, useState } from 'react'
 import {
@@ -657,6 +658,14 @@ export default function Forecast() {
         </p>
       </Panel>
 
+      <AIProjectionInsight
+        projection={projection}
+        location={location}
+        variable={variable}
+        horizon={horizon}
+        sensitivity={sensitivity}
+        isValid={Boolean(isValid)}
+      />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>
           <div className="flex items-center gap-2">
