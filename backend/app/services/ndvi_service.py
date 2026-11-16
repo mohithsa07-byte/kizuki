@@ -1,4 +1,3 @@
-
 from datetime import date, datetime
 from functools import lru_cache
 from typing import Dict, List, Tuple
@@ -157,43 +156,40 @@ def _fetch_band(
     lat: float,
     lng: float,
     band: str,
-    first_modis: str,
-    last_modis: str,
+    composites: List[Tuple[str, str]],
 ) -> Dict[str, int]:
-
-    data = _request_json(
-        client,
-        "subset",
-        {
-            "latitude": lat,
-            "longitude": lng,
-            "band": band,
-            "startDate": first_modis,
-            "endDate": last_modis,
-            "kmAboveBelow": 0,
-            "kmLeftRight": 0,
-        },
-    )
-
-    rows = data.get("subset")
-
-    if not isinstance(rows, list):
-        raise NdviServiceError(
-            f"MODIS response for {band} has no subset data."
+    """Fetch at most ten MODIS composites per request (ORNL API limit)."""
+    values: Dict[str, int] = {}
+    for offset in range(0, len(composites), 10):
+        batch = composites[offset:offset + 10]
+        data = _request_json(
+            client,
+            "subset",
+            {
+                "latitude": lat,
+                "longitude": lng,
+                "band": band,
+                "startDate": batch[0][0],
+                "endDate": batch[-1][0],
+                "kmAboveBelow": 0,
+                "kmLeftRight": 0,
+            },
         )
-
-    values = {}
-
-    for row in rows:
-        try:
-            modis_date = row["modis_date"]
-            raw_value = int(row["data"][0])
-
-            values[modis_date] = raw_value
-
-        except (KeyError, IndexError, TypeError, ValueError):
-            continue
-
+        rows = data.get("subset")
+        if not isinstance(rows, list):
+            raise NdviServiceError(
+                f"MODIS response for {band} has no subset data."
+            )
+        for row in rows:
+            try:
+                # Avoid mixing observations from other bands if present.
+                if row.get("band") not in (None, band):
+                    continue
+                modis_date = row["modis_date"]
+                raw_value = int(row["data"][0])
+                values[modis_date] = raw_value
+            except (KeyError, IndexError, TypeError, ValueError):
+                continue
     return values
 
 
@@ -232,26 +228,8 @@ def get_ndvi_timeseries(
                 "No MODIS observations found for this period."
             )
 
-        first_modis = composites[0][0]
-        last_modis = composites[-1][0]
-
-        ndvi_raw = _fetch_band(
-            client,
-            lat,
-            lng,
-            NDVI_BAND,
-            first_modis,
-            last_modis,
-        )
-
-        qa_raw = _fetch_band(
-            client,
-            lat,
-            lng,
-            QA_BAND,
-            first_modis,
-            last_modis,
-        )
+        ndvi_raw = _fetch_band(client, lat, lng, NDVI_BAND, composites)
+        qa_raw = _fetch_band(client, lat, lng, QA_BAND, composites)
 
     points: List[NdviPoint] = []
 
