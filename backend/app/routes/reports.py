@@ -117,10 +117,10 @@ def chart(records, field, title, unit):
     return drawing
 
 
-def get_location_map(client, lat, lng):
+async def get_location_map(client, lat, lng):
     # Esri map export: geographic context, NOT historical imagery.
     delta = 1.0
-    response = client.get(
+    response = await client.get(
         "https://server.arcgisonline.com/ArcGIS/rest/services/"
         "World_Street_Map/MapServer/export",
         params={
@@ -222,7 +222,7 @@ async def environmental_report(request: ReportRequest):
 
             map_bytes = None
             try:
-                map_bytes = get_location_map(
+                map_bytes = await get_location_map(
                     client, request.lat, request.lng
                 )
             except (httpx.HTTPError, ValueError):
@@ -328,7 +328,7 @@ async def environmental_report(request: ReportRequest):
         if map_bytes:
             story.extend([
                 Image(
-                    ImageReader(io.BytesIO(map_bytes)),
+                    io.BytesIO(map_bytes),
                     width=490,
                     height=234,
                 ),
