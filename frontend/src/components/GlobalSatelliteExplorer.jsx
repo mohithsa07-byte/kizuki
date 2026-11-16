@@ -26,7 +26,7 @@ const LAYERS = {
   },
   street: {
     label: 'Street',
-    url: 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: 'Â© OpenStreetMap contributors'
   }
 }
@@ -363,7 +363,7 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
                 attribution={LAYERS[layer].attribution}
                 maxZoom={18}
                 maxNativeZoom={layer === 'terrain' ? 17 : 18}
-                className={layer === 'street' ? 'osm-dark' : ''}
+                className=''
               />
 
               {layer === 'satellite' && (
