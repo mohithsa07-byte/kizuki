@@ -5,6 +5,7 @@ import GlobalClimateHeatmap from '../components/GlobalClimateHeatmap'
 import { useEffect, useMemo, useState } from 'react'
 import {
   MapContainer,
+  Pane,
   TileLayer,
   WMSTileLayer,
   CircleMarker,
@@ -443,13 +444,14 @@ export default function ClimateExplorer() {
                 />
               )}
 
-              {/* KIZUKI GEOGRAPHICAL LABELS */}
-              <TileLayer
-                url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-                attribution="Labels © Esri"
-                opacity={1}
-                zIndex={450}
-              />
+              {/* KIZUKI GEOGRAPHICAL LABELS - ALWAYS ABOVE SATELLITE IMAGERY */}
+              <Pane name="kizuki-geographical-labels" style={{ zIndex: 650, pointerEvents: 'none' }}>
+                <TileLayer
+                  url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                  attribution="Labels © Esri"
+                  opacity={1}
+                />
+              </Pane>
               <ZoomControl position="bottomright" />
 
               <MapEvents onSelect={setLocation} />
