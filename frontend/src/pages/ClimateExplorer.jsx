@@ -611,7 +611,7 @@ export default function ClimateExplorer() {
           afterYear={year}
         />
 
-        <GlobalClimateHeatmap />
+        <GlobalClimateHeatmap location={location} />
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-5">
           <p className="text-xs text-slate-500">
