@@ -149,6 +149,7 @@ export default function ClimateExplorer() {
   const [compareYear, setCompareYear] = useState(2018)
   const [layer, setLayer] = useState('temperature')
   const [basemap, setBasemap] = useState('dark')
+  const [hemisphere, setHemisphere] = useState('arctic')
 
   const regions = useApi('/api/regions')
   const places = Array.isArray(regions.data) ? regions.data : []
@@ -239,7 +240,24 @@ export default function ClimateExplorer() {
             </h2>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {layer === 'sea-ice' && (
+          <Panel>
+            <p className="text-sm font-semibold text-white">Sea ice concentration · satellite visualization</p>
+            <p className="mt-2 text-xs leading-6 text-slate-400">
+              The map requests a NASA GIBS AMSR2 sea ice concentration image for the selected year.
+              Arctic observations use September 15; Antarctic observations use February 15.
+              The existing Leaflet map uses Web Mercator, which cannot display the poles themselves.
+              Blank imagery may mean the selected layer/date is unavailable in this projection.
+              This visualization does not calculate sea ice extent or a quantitative year-over-year trend.
+            </p>
+            <a href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noreferrer"
+              className="mt-3 inline-block text-sm font-semibold text-emerald-300 hover:underline">
+              Open NASA Worldview for native polar exploration
+            </a>
+          </Panel>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-2">
               <span className="text-xs text-slate-400">
                 Select region
@@ -342,8 +360,18 @@ export default function ClimateExplorer() {
               >
                 <option value="temperature">Temperature</option>
                 <option value="rainfall">Rainfall</option>
+                <option value="sea-ice">Sea ice concentration</option>
               </select>
             </label>
+            {layer === 'sea-ice' && (
+              <label className="space-y-2">
+                <span className="text-xs text-slate-400">Polar region</span>
+                <select className={SELECT_STYLE} value={hemisphere} onChange={e => setHemisphere(e.target.value)}>
+                  <option value="arctic">Arctic · September</option>
+                  <option value="antarctic">Antarctic · February</option>
+                </select>
+              </label>
+            )}
           </div>
         </Panel>
 
@@ -391,10 +419,28 @@ export default function ClimateExplorer() {
                 />
               )}
 
+              {layer === 'sea-ice' && (
+                <WMSTileLayer
+                  key={`sea-ice-${hemisphere}-${year}`}
+                  url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+                  layers="AMSRU2_Sea_Ice_Concentration_12km"
+                  format="image/png"
+                  transparent
+                  opacity={0.9}
+                  version="1.1.1"
+                  time={`${year}-${hemisphere === 'arctic' ? '09-15' : '02-15'}`}
+                  attribution="NASA GIBS / AMSR2 sea ice concentration"
+                />
+              )}
+
               <ZoomControl position="bottomright" />
 
               <MapEvents onSelect={setLocation} />
-              <MapCamera location={location} />
+              {layer === 'sea-ice' ? (
+                <MapCamera location={{lat: hemisphere === 'arctic' ? 78 : -75, lng: 0}} />
+              ) : (
+                <MapCamera location={location} />
+              )}
 
               {places.map(place => (
                 <CircleMarker
@@ -436,12 +482,14 @@ export default function ClimateExplorer() {
 
             <div className="pointer-events-none absolute right-4 top-4 z-[500] max-w-[220px] rounded-xl border border-white/10 bg-[#071521]/90 px-3 py-2 backdrop-blur-xl">
               <p className="text-xs font-semibold text-white">
-                {layer === 'temperature' ? `Satellite surface temperature · July ${year}` : `Annual rainfall · ${year}`}
+                {layer === 'temperature' ? `Satellite surface temperature · July ${year}` : layer === 'sea-ice' ? `Sea ice concentration · ${hemisphere === 'arctic' ? 'September' : 'February'} ${year}` : `Annual rainfall · ${year}`}
               </p>
               <p className="mt-1 text-[11px] leading-4 text-slate-300">
                 {layer === 'temperature'
                   ? 'NASA MODIS imagery; surface temperature, not 2 m air temperature.'
-                  : 'NASA POWER rainfall is shown for the selected location, not as a global rainfall raster.'}
+                  : layer === 'sea-ice'
+                    ? 'NASA AMSR2 imagery (12 km). Polar areas may not render fully in Web Mercator.'
+                    : 'NASA POWER rainfall is shown for the selected location, not as a global rainfall raster.'}
               </p>
             </div>
 
@@ -584,7 +632,9 @@ export default function ClimateExplorer() {
               <h2 className="mt-2 font-display text-xl font-semibold text-white">
                 {layer === 'temperature'
                   ? 'Annual temperature trend'
-                  : 'Annual precipitation trend'}
+                  : layer === 'sea-ice'
+                    ? 'Annual precipitation trend (separate climate context)'
+                    : 'Annual precipitation trend'}
               </h2>
               <p className="mt-2 text-xs text-slate-400">
                 {location.name} · {start}–{end}
