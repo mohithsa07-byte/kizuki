@@ -1,4 +1,4 @@
-﻿import SeaIceTrends from '../components/SeaIceTrends'
+import SeaIceTrends from '../components/SeaIceTrends'
 import ReportGenerator from '../components/ReportGenerator'
 import SatelliteComparison from '../components/SatelliteComparison'
 import GlobalClimateHeatmap from '../components/GlobalClimateHeatmap'
@@ -482,55 +482,119 @@ export default function ClimateExplorer() {
             </MapContainer>
 
             {/* KIZUKI MAP LEGEND */}
-            <div className="absolute bottom-16 right-4 z-[500] w-48 rounded-2xl border border-white/15 bg-[#071521]/95 p-4 shadow-2xl backdrop-blur-xl">
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-emerald-300">
-                Map legend
+            <div className="absolute bottom-16 right-4 z-[500] w-56 max-h-[65%] overflow-y-auto rounded-2xl border border-emerald-300/20 bg-[#071521]/95 p-4 shadow-2xl backdrop-blur-xl">
+
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                Colour interpretation
               </p>
 
-              {layer === 'rainfall' ? (
-                <div className="text-xs leading-5 text-slate-300">
-                  <p className="font-semibold text-white">Annual rainfall</p>
-                  <p className="mt-2">
-                    Measured in millimetres (mm).
-                    No rainfall colour overlay is displayed.
+              {layer === 'temperature' && (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-white">
+                    Land surface temperature
                   </p>
-                </div>
-              ) : (
-                <div>
-                  <p className="mb-2 text-xs font-semibold text-white">
-                    {layer === 'sea-ice'
-                      ? 'Sea ice concentration'
-                      : 'Land surface temperature'}
+
+                  <p className="text-[11px] text-slate-300">
+                    Read the NASA colour scale below to match
+                    map colours with temperature values.
                   </p>
 
                   <img
-                    key={layer}
-                    src={
-                      'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi' +
-                      '?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic' +
-                      '&FORMAT=image/png&WIDTH=20&HEIGHT=180&LAYER=' +
-                      (layer === 'sea-ice'
-                        ? 'AMSRU2_Sea_Ice_Concentration_12km'
-                        : 'MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day')
-                    }
-                    alt="NASA satellite layer colour legend"
-                    className="max-h-48 max-w-full object-contain"
-                    onError={event => {
-                      event.currentTarget.style.display = 'none'
+                    src="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day"
+                    alt="NASA MODIS land surface temperature colour scale"
+                    className="max-h-52 max-w-full object-contain"
+                    onError={e => {
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.nextElementSibling.style.display = 'block'
                     }}
                   />
 
-                  <p className="mt-3 text-[11px] leading-5 text-slate-400">
-                    {layer === 'sea-ice'
-                      ? 'Ice concentration represents the percentage of a satellite pixel covered by sea ice.'
-                      : 'Satellite land-surface temperature is different from air temperature.'}
+                  <p style={{display:'none'}} className="text-xs text-amber-300">
+                    Official temperature colour scale unavailable.
+                    Numerical colour meanings cannot be verified.
                   </p>
 
-                  <p className="mt-2 text-[10px] text-slate-500">
-                    Source: NASA GIBS
+                  <p className="text-[11px] leading-5 text-slate-400">
+                    Temperature refers to the land surface,
+                    not the surrounding air.
                   </p>
                 </div>
               )}
+
+              {layer === 'sea-ice' && (
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-white">
+                    Sea ice concentration
+                  </p>
+
+                  <p className="text-[11px] text-slate-300">
+                    Concentration measures how much of an
+                    observed ocean area is covered by ice.
+                  </p>
+
+                  <div className="space-y-2 text-[11px]">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-slate-600"/>
+                      <span>0% — Open water</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-slate-500"/>
+                      <span>1–14% — Sparse ice</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-slate-400"/>
+                      <span>15–49% — Partial ice cover</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-slate-300"/>
+                      <span>50–79% — Substantial ice cover</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-3 w-3 rounded-sm bg-white"/>
+                      <span>80–100% — Dense ice cover</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] leading-4 text-amber-200">
+                    The swatches above are illustrative concentration
+                    categories, not verified NASA map colours.
+                  </p>
+
+                  <img
+                    src="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=AMSRU2_Sea_Ice_Concentration_12km"
+                    alt="Official NASA sea ice concentration colour legend"
+                    className="max-h-44 max-w-full object-contain"
+                    onError={e => {
+                      e.currentTarget.style.display = 'none'
+                      e.currentTarget.nextElementSibling.style.display = 'block'
+                    }}
+                  />
+
+                  <p style={{display:'none'}} className="text-[11px] text-amber-300">
+                    Official satellite colour scale unavailable.
+                  </p>
+                </div>
+              )}
+
+              {layer === 'rainfall' && (
+                <div className="space-y-2 text-xs text-slate-300">
+                  <p className="font-semibold text-white">
+                    Annual precipitation
+                  </p>
+                  <p>
+                    Measured in millimetres (mm).
+                    Higher values indicate more rainfall.
+                  </p>
+                  <p className="text-slate-400">
+                    No coloured rainfall raster is currently
+                    displayed on this map.
+                  </p>
+                </div>
+              )}
+
+              <p className="mt-4 border-t border-white/10 pt-3 text-[10px] text-slate-500">
+                Satellite source: NASA GIBS
+              </p>
             </div>
             <div className="pointer-events-none absolute right-4 top-4 z-[500] max-w-[220px] rounded-xl border border-white/10 bg-[#071521]/90 px-3 py-2 backdrop-blur-xl">
               <p className="text-xs font-semibold text-white">
@@ -797,5 +861,3 @@ export default function ClimateExplorer() {
     </div>
   )
 }
-
-
