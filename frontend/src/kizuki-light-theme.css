@@ -78,3 +78,52 @@ html[data-kizuki-theme="light"] .leaflet-popup-content-wrapper,
 html[data-kizuki-theme="light"] .leaflet-popup-tip {
   background: #fff; color: #183039;
 }
+
+
+/* KIZUKI COMPLETE LIGHT PATCH v2 */
+/* Explicitly cover custom dark dashboard panels and Tailwind arbitrary values. */
+html[data-kizuki-theme="light"] { --k-bg:#f3f7f8; --k-panel:#fff; --k-panel-alt:#edf4f5; --k-ink:#173039; --k-muted:#55717d; --k-border:#d5e2e6; }
+html[data-kizuki-theme="light"] body,
+html[data-kizuki-theme="light"] #root { background:#f3f7f8; color:#173039; }
+html[data-kizuki-theme="light"] aside,
+html[data-kizuki-theme="light"] .kizuki-header,
+html[data-kizuki-theme="light"] .kizuki-bottom-nav { background:#fff !important; color:#173039; border-color:#d5e2e6; }
+html[data-kizuki-theme="light"] aside .text-white,
+html[data-kizuki-theme="light"] header .text-white { color:#173039 !important; }
+html[data-kizuki-theme="light"] aside a:not(.bg-emerald-glow\/10) { color:#506b75; }
+html[data-kizuki-theme="light"] aside a:hover { background:#eaf3f1; color:#086c59; }
+html[data-kizuki-theme="light"] aside a[aria-current="page"] { background:#e0f3ec !important; color:#087c65 !important; }
+/* Common dark surfaces in hand-authored components. Excludes map tiles. */
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-[#0"],
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-[#1"],
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-slate-9"],
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-slate-8"],
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-gray-9"],
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-zinc-9"],
+html[data-kizuki-theme="light"] :is(section,article,div,aside,main)[class*="bg-navy-"] { background-color:#fff !important; color:#173039; }
+html[data-kizuki-theme="light"] :is(section,article,div)[class*="bg-white/5"],
+html[data-kizuki-theme="light"] :is(section,article,div)[class*="bg-white/10"],
+html[data-kizuki-theme="light"] :is(section,article,div)[class*="bg-slate-7"] { background-color:#edf4f5 !important; }
+html[data-kizuki-theme="light"] :is(section,article,div)[class*="border-white/"],
+html[data-kizuki-theme="light"] :is(section,article,div)[class*="border-slate-7"],
+html[data-kizuki-theme="light"] :is(section,article,div)[class*="border-slate-8"] { border-color:#d5e2e6 !important; }
+/* Utility text colors in dashboards, including arbitrary text-white variants. */
+html[data-kizuki-theme="light"] :is(main,section,article,aside,header) [class~="text-white"],
+html[data-kizuki-theme="light"] :is(main,section,article,aside,header) [class~="text-slate-100"],
+html[data-kizuki-theme="light"] :is(main,section,article,aside,header) [class~="text-slate-200"] { color:#173039 !important; }
+html[data-kizuki-theme="light"] :is(main,section,article,aside,header) [class~="text-slate-300"],
+html[data-kizuki-theme="light"] :is(main,section,article,aside,header) [class~="text-slate-400"],
+html[data-kizuki-theme="light"] :is(main,section,article,aside,header) [class~="text-gray-400"] { color:#55717d !important; }
+/* Preserve readable contrast for actual form controls. */
+html[data-kizuki-theme="light"] :is(input,select,textarea) {
+ background:#fff !important; color:#173039 !important; border:1px solid #b9cfd5 !important;
+}
+html[data-kizuki-theme="light"] :is(input,textarea)::placeholder { color:#708892 !important; }
+html[data-kizuki-theme="light"] select option { background:#fff; color:#173039; }
+/* Some custom research panels use inline background colors; these are scoped
+   to semantic panels, not maps or visualizations. */
+html[data-kizuki-theme="light"] :is(.glass-panel,.glass-panel-strong) { background:#fff !important; color:#173039 !important; border-color:#d5e2e6 !important; }
+html[data-kizuki-theme="light"] .leaflet-container { background:#e6eef0; }
+html[data-kizuki-theme="light"] .osm-dark { filter:none !important; }
+html[data-kizuki-theme="light"] .kizuki-bottom-link { color:#55717d; }
+html[data-kizuki-theme="light"] .kizuki-bottom-link-active { color:#087c65; background:#e0f3ec; }
