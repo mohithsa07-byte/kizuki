@@ -1,4 +1,4 @@
-import ReportGenerator from '../components/ReportGenerator'
+﻿import ReportGenerator from '../components/ReportGenerator'
 import SatelliteComparison from '../components/SatelliteComparison'
 import GlobalClimateHeatmap from '../components/GlobalClimateHeatmap'
 import { useEffect, useMemo, useState } from 'react'
@@ -190,7 +190,7 @@ export default function ClimateExplorer() {
       : null
 
   const chartKey = layer === 'temperature' ? 'temp' : 'rain'
-  const chartUnit = layer === 'temperature' ? '°C' : 'mm'
+  const chartUnit = layer === 'temperature' ? 'Â°C' : 'mm'
 
   const sourceLabel = climate.data?.is_sample
     ? 'Sample dataset'
@@ -242,7 +242,7 @@ export default function ClimateExplorer() {
 
           {layer === 'sea-ice' && (
           <Panel>
-            <p className="text-sm font-semibold text-white">Sea ice concentration · satellite visualization</p>
+            <p className="text-sm font-semibold text-white">Sea ice concentration Â· satellite visualization</p>
             <p className="mt-2 text-xs leading-6 text-slate-400">
               The map requests a NASA GIBS AMSR2 sea ice concentration image for the selected year.
               Arctic observations use September 15; Antarctic observations use February 15.
@@ -367,8 +367,8 @@ export default function ClimateExplorer() {
               <label className="space-y-2">
                 <span className="text-xs text-slate-400">Polar region</span>
                 <select className={SELECT_STYLE} value={hemisphere} onChange={e => setHemisphere(e.target.value)}>
-                  <option value="arctic">Arctic · September</option>
-                  <option value="antarctic">Antarctic · February</option>
+                  <option value="arctic">Arctic Â· September</option>
+                  <option value="antarctic">Antarctic Â· February</option>
                 </select>
               </label>
             )}
@@ -400,8 +400,8 @@ export default function ClimateExplorer() {
                 }
                 attribution={
                   basemap === 'satellite'
-                    ? 'Tiles © Esri'
-                    : '© OpenStreetMap contributors'
+                    ? 'Tiles Â© Esri'
+                    : 'Â© OpenStreetMap contributors'
                 }
                 className=''
               />
@@ -415,7 +415,7 @@ export default function ClimateExplorer() {
                   layers="MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day"
                   format="image/png" transparent opacity={0.82}
                   version="1.1.1" time={`${year}-07-15`}
-                  attribution="NASA GIBS · MODIS Terra July daytime LST"
+                  attribution="NASA GIBS Â· MODIS Terra July daytime LST"
                 />
               )}
 
@@ -480,9 +480,60 @@ export default function ClimateExplorer() {
               </CircleMarker>
             </MapContainer>
 
+            {/* KIZUKI MAP LEGEND */}
+            <div className="absolute bottom-16 right-4 z-[500] w-48 rounded-2xl border border-white/15 bg-[#071521]/95 p-4 shadow-2xl backdrop-blur-xl">
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-emerald-300">
+                Map legend
+              </p>
+
+              {layer === 'rainfall' ? (
+                <div className="text-xs leading-5 text-slate-300">
+                  <p className="font-semibold text-white">Annual rainfall</p>
+                  <p className="mt-2">
+                    Measured in millimetres (mm).
+                    No rainfall colour overlay is displayed.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="mb-2 text-xs font-semibold text-white">
+                    {layer === 'sea-ice'
+                      ? 'Sea ice concentration'
+                      : 'Land surface temperature'}
+                  </p>
+
+                  <img
+                    key={layer}
+                    src={
+                      'https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi' +
+                      '?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic' +
+                      '&FORMAT=image/png&WIDTH=20&HEIGHT=180&LAYER=' +
+                      (layer === 'sea-ice'
+                        ? 'AMSRU2_Sea_Ice_Concentration_12km'
+                        : 'MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day')
+                    }
+                    alt="NASA satellite layer colour legend"
+                    className="max-h-48 max-w-full object-contain"
+                    onError={event => {
+                      event.currentTarget.style.display = 'none'
+                    }}
+                  />
+
+                  <p className="mt-3 text-[11px] leading-5 text-slate-400">
+                    {layer === 'sea-ice'
+                      ? 'Ice concentration represents the percentage of a satellite pixel covered by sea ice.'
+                      : 'Satellite land-surface temperature is different from air temperature.'}
+                  </p>
+
+                  <p className="mt-2 text-[10px] text-slate-500">
+                    Source: NASA GIBS
+                  </p>
+                </div>
+              )}
+            </div>
             <div className="pointer-events-none absolute right-4 top-4 z-[500] max-w-[220px] rounded-xl border border-white/10 bg-[#071521]/90 px-3 py-2 backdrop-blur-xl">
               <p className="text-xs font-semibold text-white">
-                {layer === 'temperature' ? `Satellite surface temperature · July ${year}` : layer === 'sea-ice' ? `Sea ice concentration · ${hemisphere === 'arctic' ? 'September' : 'February'} ${year}` : `Annual rainfall · ${year}`}
+                {layer === 'temperature' ? `Satellite surface temperature Â· July ${year}` : layer === 'sea-ice' ? `Sea ice concentration Â· ${hemisphere === 'arctic' ? 'September' : 'February'} ${year}` : `Annual rainfall Â· ${year}`}
               </p>
               <p className="mt-1 text-[11px] leading-4 text-slate-300">
                 {layer === 'temperature'
@@ -537,17 +588,17 @@ export default function ClimateExplorer() {
             <div className="mt-7 space-y-5">
               <div className="border-b border-white/10 pb-5">
                 <p className="text-xs text-slate-400">
-                  Mean air temperature · {year}
+                  Mean air temperature Â· {year}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-white">
                   {climate.loading ? '...' : display(current?.temp, 2)}
-                  <span className="ml-2 text-sm text-emerald-300">°C</span>
+                  <span className="ml-2 text-sm text-emerald-300">Â°C</span>
                 </p>
               </div>
 
               <div className="border-b border-white/10 pb-5">
                 <p className="text-xs text-slate-400">
-                  Annual precipitation · {year}
+                  Annual precipitation Â· {year}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-white">
                   {climate.loading ? '...' : display(current?.rain)}
@@ -580,15 +631,15 @@ export default function ClimateExplorer() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Metric
             icon={Thermometer}
-            title={`Temperature · ${year}`}
+            title={`Temperature Â· ${year}`}
             value={climate.loading ? '...' : display(current?.temp, 2)}
-            unit="°C"
+            unit="Â°C"
             detail="Annual mean air temperature at 2 metres"
           />
 
           <Metric
             icon={CloudRain}
-            title={`Rainfall · ${year}`}
+            title={`Rainfall Â· ${year}`}
             value={climate.loading ? '...' : display(current?.rain)}
             unit="mm"
             detail="Total precipitation over the calendar year"
@@ -604,7 +655,7 @@ export default function ClimateExplorer() {
                   ? 'N/A'
                   : `${tempChange > 0 ? '+' : ''}${tempChange.toFixed(2)}`
             }
-            unit="°C"
+            unit="Â°C"
             detail={`${year} minus ${compareYear}`}
           />
 
@@ -637,7 +688,7 @@ export default function ClimateExplorer() {
                     : 'Annual precipitation trend'}
               </h2>
               <p className="mt-2 text-xs text-slate-400">
-                {location.name} · {start}–{end}
+                {location.name} Â· {start}â€“{end}
               </p>
             </div>
 
@@ -727,7 +778,7 @@ export default function ClimateExplorer() {
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-5">
           <p className="text-xs text-slate-500">
-            KIZUKI · See the change. Understand the cause.
+            KIZUKI Â· See the change. Understand the cause.
           </p>
           <Link
             to="/vegetation"
@@ -741,3 +792,4 @@ export default function ClimateExplorer() {
     </div>
   )
 }
+
