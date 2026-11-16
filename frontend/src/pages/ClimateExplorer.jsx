@@ -143,6 +143,7 @@ function display(value, digits = 1) {
 
 export default function ClimateExplorer() {
   const [location, setLocation] = useState(DEFAULT)
+  // KIZUKI PS15 CONNECTED TIMELINE
   const [year, setYear] = useState(2024)
   const [compareYear, setCompareYear] = useState(2018)
   const [layer, setLayer] = useState('temperature')
@@ -284,6 +285,33 @@ export default function ClimateExplorer() {
                 ))}
               </select>
             </label>
+
+            <div className="space-y-3 md:col-span-2 xl:col-span-3">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="climate-year-timeline" className="text-xs font-semibold text-slate-300">
+                  Interactive climate timeline
+                </label>
+                <output htmlFor="climate-year-timeline" className="text-sm font-semibold text-emerald-300">
+                  {year}
+                </output>
+              </div>
+              <input
+                id="climate-year-timeline"
+                type="range"
+                min={YEARS[0]}
+                max={YEARS[YEARS.length - 1]}
+                step="1"
+                value={year}
+                onChange={event => setYear(Number(event.target.value))}
+                aria-label="Climate observation year"
+                className="w-full cursor-pointer accent-emerald-500"
+              />
+              <div className="flex justify-between text-[11px] text-slate-400">
+                <span>{YEARS[0]}</span>
+                <span>Drag to update selected-year statistics and charts</span>
+                <span>{YEARS[YEARS.length - 1]}</span>
+              </div>
+            </div>
 
             <label className="space-y-2">
               <span className="text-xs text-slate-400">
@@ -618,7 +646,7 @@ export default function ClimateExplorer() {
           afterYear={year}
         />
 
-        <GlobalClimateHeatmap location={location} />
+        <GlobalClimateHeatmap location={location} year={year} onYearChange={setYear} />
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-5">
           <p className="text-xs text-slate-500">

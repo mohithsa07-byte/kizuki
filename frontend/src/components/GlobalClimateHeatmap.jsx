@@ -80,8 +80,11 @@ function ClimateMap({ year, location, onSelect }) {
   )
 }
 
-export default function GlobalClimateHeatmap({ location }) {
-  const [year, setYear] = useState(2024)
+export default function GlobalClimateHeatmap({ location, year: controlledYear, onYearChange }) {
+  // KIZUKI PS15 CONNECTED TIMELINE: controlled by Climate Explorer when provided.
+  const [localYear, setLocalYear] = useState(2024)
+  const year = controlledYear ?? localYear
+  const setYear = onYearChange ?? setLocalYear
   const [selected, setSelected] = useState(null)
 
   const focus = selected || location
@@ -130,6 +133,21 @@ export default function GlobalClimateHeatmap({ location }) {
               </option>
             ))}
           </select>
+
+          <label htmlFor="modis-year-timeline" className="flex min-w-[180px] flex-1 flex-col gap-1 text-xs text-slate-300">
+            <span>Satellite timeline · {year}</span>
+            <input
+              id="modis-year-timeline"
+              type="range"
+              min="2010"
+              max="2025"
+              step="1"
+              value={year}
+              onChange={event => setYear(Number(event.target.value))}
+              aria-label="Satellite observation year"
+              className="w-full cursor-pointer accent-emerald-500"
+            />
+          </label>
 
           <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 text-xs text-emerald-200">
             July monthly observation
