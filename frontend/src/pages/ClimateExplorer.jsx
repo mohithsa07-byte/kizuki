@@ -552,13 +552,43 @@ export default function ClimateExplorer() {
                   </p>
                 </div>
               ) : layer === 'temperature' ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p className="text-sm font-semibold text-white">
                     Land surface temperature
                   </p>
-                  <p className="text-xs text-slate-300">
-                    Numerical colour values require the
-                    matching NASA MODIS colour scale.
+
+                  <p className="text-[11px] text-slate-300">
+                    MODIS Terra - July daytime
+                  </p>
+
+                  <div
+                    className="h-3 w-full rounded-full"
+                    style={{
+                      background: 'linear-gradient(to right, #4936a5, #286bc7, #36a873, #f0df31, #f59b25, #ce4141)'
+                    }}
+                  />
+
+                  <div className="flex justify-between text-[10px] text-slate-300">
+                    <span>Relatively cooler</span>
+                    <span>Relatively hotter</span>
+                  </div>
+
+                  <div className="space-y-2 text-[11px] text-slate-300">
+                    <p>Blue / purple - cooler surfaces</p>
+                    <p>Green - intermediate temperatures</p>
+                    <p>Yellow - warmer surfaces</p>
+                    <p>Orange / red - hotter surfaces</p>
+                    <p>White / clear - possibly missing or masked observations</p>
+                  </div>
+
+                  <p className="border-t border-white/10 pt-2 text-[10px] leading-4 text-amber-200">
+                    Illustrative colour guide only.
+                    Exact Celsius values and colour thresholds
+                    require the matching NASA MODIS colour map.
+                  </p>
+
+                  <p className="text-[10px] text-slate-500">
+                    NASA GIBS / MODIS Terra LST
                   </p>
                 </div>
               ) : (
