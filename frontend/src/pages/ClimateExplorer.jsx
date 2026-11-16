@@ -489,119 +489,54 @@ export default function ClimateExplorer() {
             </MapContainer>
 
             {/* KIZUKI MAP LEGEND */}
-            <div className="absolute bottom-16 right-4 z-[500] w-56 max-h-[65%] overflow-y-auto rounded-2xl border border-emerald-300/20 bg-[#071521]/95 p-4 shadow-2xl backdrop-blur-xl">
-
-              <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
-                Colour interpretation
+            <div className="absolute bottom-16 right-4 z-[500] w-56 max-h-[65%] overflow-y-auto rounded-2xl border border-white/15 bg-[#071521]/95 p-4 shadow-2xl backdrop-blur-xl">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-emerald-300">
+                Colour legend
               </p>
 
-              {layer === 'temperature' && (
+              {layer === 'sea-ice' ? (
                 <div className="space-y-3">
+                  <p className="text-sm font-semibold text-white">
+                    Sea ice concentration (%)
+                  </p>
+
+                  <img
+                    src="/legends/sea-ice-official.png"
+                    alt="NASA sea ice concentration colour scale, 0 to 100 percent"
+                    className="mx-auto max-h-72 max-w-full object-contain"
+                  />
+
+                  <p className="text-xs leading-5 text-slate-300">
+                    Purple and blue indicate lower ice
+                    concentration. Yellow, red and pale pink
+                    indicate higher ice concentration.
+                  </p>
+
+                  <p className="text-[10px] text-slate-500">
+                    Source: NASA GIBS colour map
+                  </p>
+                </div>
+              ) : layer === 'temperature' ? (
+                <div className="space-y-2">
                   <p className="text-sm font-semibold text-white">
                     Land surface temperature
                   </p>
-
-                  <p className="text-[11px] text-slate-300">
-                    Read the NASA colour scale below to match
-                    map colours with temperature values.
-                  </p>
-
-                  <img
-                    src="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day"
-                    alt="NASA MODIS land surface temperature colour scale"
-                    className="max-h-52 max-w-full object-contain"
-                    onError={e => {
-                      e.currentTarget.style.display = 'none'
-                      e.currentTarget.nextElementSibling.style.display = 'block'
-                    }}
-                  />
-
-                  <p style={{display:'none'}} className="text-xs text-amber-300">
-                    Official temperature colour scale unavailable.
-                    Numerical colour meanings cannot be verified.
-                  </p>
-
-                  <p className="text-[11px] leading-5 text-slate-400">
-                    Temperature refers to the land surface,
-                    not the surrounding air.
+                  <p className="text-xs text-slate-300">
+                    Numerical colour values require the
+                    matching NASA MODIS colour scale.
                   </p>
                 </div>
-              )}
-
-              {layer === 'sea-ice' && (
-                <div className="space-y-3">
+              ) : (
+                <div className="space-y-2">
                   <p className="text-sm font-semibold text-white">
-                    Sea ice concentration
+                    Annual rainfall
                   </p>
-
-                  <p className="text-[11px] text-slate-300">
-                    Concentration measures how much of an
-                    observed ocean area is covered by ice.
-                  </p>
-
-                  <div className="space-y-2 text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-sm bg-slate-600"/>
-                      <span>0% â€” Open water</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-sm bg-slate-500"/>
-                      <span>1â€“14% â€” Sparse ice</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-sm bg-slate-400"/>
-                      <span>15â€“49% â€” Partial ice cover</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-sm bg-slate-300"/>
-                      <span>50â€“79% â€” Substantial ice cover</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-sm bg-white"/>
-                      <span>80â€“100% â€” Dense ice cover</span>
-                    </div>
-                  </div>
-
-                  <p className="text-[10px] leading-4 text-amber-200">
-                    The swatches above are illustrative concentration
-                    categories, not verified NASA map colours.
-                  </p>
-
-                  <img
-                    src="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=AMSRU2_Sea_Ice_Concentration_12km"
-                    alt="Official NASA sea ice concentration colour legend"
-                    className="max-h-44 max-w-full object-contain"
-                    onError={e => {
-                      e.currentTarget.style.display = 'none'
-                      e.currentTarget.nextElementSibling.style.display = 'block'
-                    }}
-                  />
-
-                  <p style={{display:'none'}} className="text-[11px] text-amber-300">
-                    Official satellite colour scale unavailable.
+                  <p className="text-xs text-slate-300">
+                    Rainfall is measured in millimetres.
+                    No rainfall raster is displayed.
                   </p>
                 </div>
               )}
-
-              {layer === 'rainfall' && (
-                <div className="space-y-2 text-xs text-slate-300">
-                  <p className="font-semibold text-white">
-                    Annual precipitation
-                  </p>
-                  <p>
-                    Measured in millimetres (mm).
-                    Higher values indicate more rainfall.
-                  </p>
-                  <p className="text-slate-400">
-                    No coloured rainfall raster is currently
-                    displayed on this map.
-                  </p>
-                </div>
-              )}
-
-              <p className="mt-4 border-t border-white/10 pt-3 text-[10px] text-slate-500">
-                Satellite source: NASA GIBS
-              </p>
             </div>
             <div className="pointer-events-none absolute right-4 top-4 z-[500] max-w-[220px] rounded-xl border border-white/10 bg-[#071521]/90 px-3 py-2 backdrop-blur-xl">
               <p className="text-xs font-semibold text-white">
