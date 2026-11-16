@@ -240,20 +240,6 @@ export default function ClimateExplorer() {
               Observation parameters
             </h2>
           </div>
-
-                        {/* KIZUKI SENTINEL-2 LAYER */}
-              {layer === 'sentinel-2' && (
-                <WMSTileLayer
-                  key="kizuki-sentinel-2"
-                  url="https://tiles.maps.eox.at/map"
-                  layers="s2cloudless"
-                  format="image/png"
-                  transparent={false}
-                  opacity={1}
-                  version="1.1.1"
-                  attribution="Sentinel-2 imagery - EOX / Copernicus"
-                />
-              )}
 {layer === 'sea-ice' && (
           <Panel>
             <p className="text-sm font-semibold text-white">Sea ice concentration Ã‚Â· satellite visualization</p>
@@ -522,7 +508,20 @@ export default function ClimateExplorer() {
               >
                 <Tooltip>{location.name}</Tooltip>
               </CircleMarker>
-            </MapContainer>
+                          {/* KIZUKI SENTINEL-2 LAYER */}
+              {layer === 'sentinel-2' && (
+                <WMSTileLayer
+                  key="kizuki-sentinel-2"
+                  url="https://tiles.maps.eox.at/map"
+                  layers="s2cloudless"
+                  format="image/png"
+                  transparent={false}
+                  opacity={1}
+                  version="1.1.1"
+                  attribution="Sentinel-2 imagery - EOX / Copernicus"
+                />
+              )}
+</MapContainer>
 
             {/* KIZUKI MAP LEGEND */}
             <div className="absolute bottom-16 right-4 z-[500] w-56 max-h-[65%] overflow-y-auto rounded-2xl border border-white/15 bg-[#071521]/95 p-4 shadow-2xl backdrop-blur-xl">
