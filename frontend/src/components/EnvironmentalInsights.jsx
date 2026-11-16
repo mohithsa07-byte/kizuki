@@ -10,7 +10,14 @@ const API = (
 
 async function getJSON(path, signal) {
   const response = await fetch(`${API}${path}`, { signal })
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  if (!response.ok) {
+    let detail = ''
+    try {
+      const payload = await response.json()
+      detail = typeof payload.detail === 'string' ? payload.detail : ''
+    } catch { /* The provider may return a non-JSON error. */ }
+    throw new Error(`HTTP ${response.status}${detail ? `: ${detail}` : ''}`)
+  }
   return response.json()
 }
 
@@ -21,14 +28,42 @@ function average(values) {
 }
 
 function annualNDVI(data) {
-  const values = (data?.points || [])
+  const observations = (data?.points || [])
     .filter(p => p.used === true && Number.isFinite(p.ndvi))
-    .map(p => p.ndvi)
+    .map(p => ({ value: p.ndvi, month: Number(String(p.date || '').slice(5, 7)) }))
+    .filter(p => p.month >= 1 && p.month <= 12)
 
-  return {
-    value: average(values),
-    count: values.length
+  return { observations, count: observations.length }
+}
+
+// Compare only months observed in BOTH years, avoiding seasonal mismatches.
+function comparableNDVI(first, last) {
+  if (!first || !last) return null
+  const monthsA = new Set(first.observations.map(p => p.month))
+  const monthsB = new Set(last.observations.map(p => p.month))
+  const shared = [...monthsA].filter(month => monthsB.has(month))
+  const a = first.observations.filter(p => shared.includes(p.month)).map(p => p.value)
+  const b = last.observations.filter(p => shared.includes(p.month)).map(p => p.value)
+  if (shared.length < 3 || a.length < 3 || b.length < 3) return null
+  return { first: average(a), last: average(b), countA: a.length, countB: b.length, months: shared.length }
+}
+
+function ndviMessage(result, startYear, endYear) {
+  if (startYear === endYear) {
+    const n = result.firstData?.count || 0
+    return n ? `${startYear}: ${n} good-quality MODIS NDVI observations available. Select different years to compare vegetation.`
+      : result.firstNDVIError ? `MODIS request failed: ${result.firstNDVIError}`
+      : `No good-quality MODIS NDVI observations available for ${startYear}.`
   }
+  const failures = [
+    result.firstNDVIError && `${startYear}: ${result.firstNDVIError}`,
+    result.lastNDVIError && `${endYear}: ${result.lastNDVIError}`
+  ].filter(Boolean)
+  if (failures.length) return `NDVI service error — ${failures.join('; ')}. No vegetation change is inferred.`
+  const a = result.firstData?.count || 0
+  const b = result.lastData?.count || 0
+  if (!a || !b) return `Insufficient good-quality MODIS NDVI observations: ${startYear} (${a}), ${endYear} (${b}). No vegetation change is inferred.`
+  return `NDVI observations exist (${startYear}: ${a}; ${endYear}: ${b}), but fewer than 3 comparable months with at least 3 valid observations per year were found. No vegetation change is inferred.`
 }
 
 function annualClimate(data, year) {
@@ -136,7 +171,9 @@ export default function EnvironmentalInsights({
           firstClimate,
           lastClimate,
           climateAvailable: Boolean(climateData),
-          ndviAvailable: Boolean(firstData?.count && lastData?.count)
+          ndviComparison: comparableNDVI(firstData, lastData),
+          firstNDVIError: firstNDVI.status === 'rejected' ? String(firstNDVI.reason?.message || firstNDVI.reason) : null,
+          lastNDVIError: lastNDVI.status === 'rejected' ? String(lastNDVI.reason?.message || lastNDVI.reason) : null
         })
       } catch (err) {
         if (!signal.aborted) setError(err.message)
@@ -150,8 +187,8 @@ export default function EnvironmentalInsights({
   }, [selection.lat, selection.lng, startYear, endYear])
 
   const vegetationChange =
-    result?.ndviAvailable && startYear !== endYear
-      ? result.lastData.value - result.firstData.value
+    result?.ndviComparison && startYear !== endYear
+      ? result.ndviComparison.last - result.ndviComparison.first
       : null
 
   const temperatureChange =
@@ -202,11 +239,8 @@ export default function EnvironmentalInsights({
         <div className="kizuki-insight-grid">
           <Insight icon={Leaf} title="Vegetation dynamics">
             {vegetationChange !== null
-              ? `Mean quality-filtered NDVI changed by ${
-                  vegetationChange >= 0 ? '+' : ''
-                }${vegetationChange.toFixed(4)} between ${startYear} and ${endYear}. `
-                + `This represents vegetation greenness at one approximately 250 m MODIS pixel, not forest-cover percentage.`
-              : 'Comparable quality-filtered NDVI observations are unavailable for both selected years. No vegetation trend is inferred.'}
+              ? `Quality-filtered MODIS NDVI: ${startYear} = ${result.ndviComparison.first.toFixed(4)} (${result.ndviComparison.countA} observations); ${endYear} = ${result.ndviComparison.last.toFixed(4)} (${result.ndviComparison.countB} observations). Change = ${vegetationChange >= 0 ? '+' : ''}${vegetationChange.toFixed(4)} across ${result.ndviComparison.months} matching calendar months. This compares one approximately 250 m pixel, not forest-cover percentage or a proven long-term trend.`
+              : ndviMessage(result, startYear, endYear)}
           </Insight>
 
           <Insight icon={Thermometer} title="Temperature">
