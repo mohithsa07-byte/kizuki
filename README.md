@@ -211,3 +211,123 @@ KIZUKI includes a Sentinel-2 imagery option in Climate Explorer.
 | Climate Data | NASA POWER, MODIS, NSIDC |
 | Deployment | Vercel |
 | Version Control | Git, GitHub |
+
+<!-- KIZUKI_AI_PROJECTION_START -->
+
+## AI-Assisted Climate Projection Lab
+
+KIZUKI combines historical climate observations, statistical trend projections, and large language model (LLM) interpretation to make climate information more accessible.
+
+### Live Application
+
+- **Frontend:** https://kizuki-zu3p.vercel.app/
+- **Backend:** https://kizuki-eta.vercel.app/
+- **Climate Projection Lab:** https://kizuki-zu3p.vercel.app/forecast
+
+### How the Projection System Works
+
+1. Users select a geographic location, climate variable, and future projection year.
+2. KIZUKI retrieves historical climate observations from NASA POWER.
+3. Monthly observations are aggregated into complete annual records.
+4. A regularized least-squares linear trend is fitted to historical observations.
+5. The trend is extrapolated to the selected future year.
+6. Users can adjust the trend sensitivity to explore alternative assumptions.
+7. NVIDIA Nemotron generates a natural-language interpretation of the resulting projection.
+
+The LLM explains the numerical results; it does not calculate or modify the regression model's projections.
+
+### AI Architecture
+
+| Component | Technology | Purpose |
+|---|---|---|
+| Historical climate data | NASA POWER API | Temperature and precipitation observations |
+| Statistical projection | Regularized linear regression | Trend extrapolation |
+| AI interpretation | NVIDIA Nemotron 3.5 Lightning 30B A3B | Explain projections and limitations |
+| Backend | Python, FastAPI, HTTPX | API requests and LLM integration |
+| Frontend | React, Vite, Tailwind CSS | Interactive climate exploration |
+| Charts | Recharts | Historical and projected data visualization |
+| Mapping | React Leaflet | Geographic selection |
+| Deployment | Vercel | Frontend and backend hosting |
+
+### AI Projection Workflow
+
+```text
+User selects location, variable and projection year
+                       |
+                       v
+           NASA POWER historical data
+                       |
+                       v
+          Annual climate aggregation
+                       |
+                       v
+       Regularized linear trend fitting
+                       |
+                       v
+       Baseline and adjusted projections
+                       |
+                       v
+       NVIDIA Nemotron LLM interpretation
+                       |
+                       v
+      AI Climate Interpretation interface
+```
+
+### AI Interpretation Endpoint
+
+`POST /api/analyst/projection-insight`
+
+Example request:
+
+```json
+{
+  "location": "Bengaluru (12.9716, 77.5946)",
+  "variable": "temperature",
+  "first_year": 1990,
+  "last_year": 2025,
+  "target_year": 2040,
+  "last_observed": 25.1,
+  "baseline": 26.0,
+  "adjusted": 26.3,
+  "sensitivity": 0.2
+}
+```
+
+The numerical values above are illustrative API inputs, not verified climate measurements.
+
+Example response structure:
+
+```json
+{
+  "interpretation": "AI-generated explanation of the supplied projection.",
+  "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+  "method": "LLM interpretation of statistical projection",
+  "is_validated_forecast": false
+}
+```
+
+The backend requires an `NVIDIA_API_KEY` environment variable.
+An optional `NVIDIA_MODEL` variable can override the default model.
+
+Never expose the NVIDIA API key in frontend code or commit it to Git.
+
+### Scientific Transparency
+
+KIZUKI's Climate Projection Lab provides **exploratory statistical projections**, not validated AI climate forecasts.
+
+Important limitations:
+
+- Linear extrapolation assumes historical trends provide useful future context.
+- The adjustable trend sensitivity is not a physical emissions scenario.
+- The displayed uncertainty envelope is heuristic, not a calibrated confidence or prediction interval.
+- Long-term temperature and precipitation patterns may be nonlinear.
+- NVIDIA Nemotron provides interpretation, not numerical forecast validation.
+- These results should not be used independently for policy, infrastructure, or safety-critical decisions.
+
+For rigorous climate planning, validated climate models and scenario-based projections, such as CMIP6, should be considered.
+
+### Current Development Status
+
+The AI interpretation feature has been implemented in source code as a proposed integration. Its production availability should be confirmed through deployment and end-to-end testing.
+
+<!-- KIZUKI_AI_PROJECTION_END -->
