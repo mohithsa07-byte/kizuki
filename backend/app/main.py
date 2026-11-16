@@ -45,3 +45,6 @@ def deployment_check():
         "commit_marker": "kizuki-ndvi-fixed-443cc3d",
         "rasterio_removed": True
     }
+
+from app.routes import satellite_compare
+app.include_router(satellite_compare.router)
