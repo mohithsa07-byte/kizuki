@@ -183,3 +183,92 @@ html[data-kizuki-theme="light"] main :is(input,select,textarea) {
 }
 /* Keep visualizations and map content untouched. */
 html[data-kizuki-theme="light"] .leaflet-container :is(.leaflet-tile-pane,.leaflet-overlay-pane) { filter:none; }
+
+/* KIZUKI LIGHT MODE V4 - source-audited, scoped to light mode only. */
+html[data-kizuki-theme="light"] {
+ --obs-base:#f5f9fa; --obs-surface:#ffffff; --obs-raised:#eef5f6;
+ --obs-border:#d3e1e5; --obs-text:#19343c; --obs-muted:#526e79;
+ --obs-sage:#087d69;
+ --research-canvas:#f5f9fa; --research-surface:#ffffff;
+ --research-surface-raised:#eef5f6; --research-text:#19343c;
+ --research-muted:#526e79; --research-line:#d3e1e5;
+ --research-accent:#087d69;
+}
+html[data-kizuki-theme="light"] .obs-overview,
+html[data-kizuki-theme="light"] .obs-overview .obs-hero,
+html[data-kizuki-theme="light"] .obs-observation-panel,
+html[data-kizuki-theme="light"] .obs-metric,
+html[data-kizuki-theme="light"] .obs-research-panel,
+html[data-kizuki-theme="light"] .obs-map-frame,
+html[data-kizuki-theme="light"] .kizuki-intelligence,
+html[data-kizuki-theme="light"] .kizuki-insight {
+ background:#ffffff !important; color:#19343c !important;
+ border-color:#d3e1e5 !important;
+}
+html[data-kizuki-theme="light"] .kizuki-insight { background:#f0f6f7 !important; }
+html[data-kizuki-theme="light"] .kizuki-intelligence :is(h1,h2,h3,h4),
+html[data-kizuki-theme="light"] .obs-overview :is(h1,h2,h3,h4) {color:#19343c !important;}
+html[data-kizuki-theme="light"] .kizuki-intelligence :is(p,span),
+html[data-kizuki-theme="light"] .obs-overview :is(p,span) {color:#526e79;}
+html[data-kizuki-theme="light"] .kizuki-eyebrow,
+html[data-kizuki-theme="light"] .obs-kicker,
+html[data-kizuki-theme="light"] .obs-panel-label {color:#087d69 !important;}
+html[data-kizuki-theme="light"] .kizuki-intelligence-header p,
+html[data-kizuki-theme="light"] .kizuki-insight p,
+html[data-kizuki-theme="light"] .kizuki-method,
+html[data-kizuki-theme="light"] .kizuki-loading {color:#526e79 !important;}
+html[data-kizuki-theme="light"] .kizuki-source-badge {color:#087d69 !important;border-color:#b7d8d0;}
+html[data-kizuki-theme="light"] .kizuki-scientific-chart {
+ --chart-grid:#d6e3e7; --chart-text:#536e78;
+ --chart-surface:#ffffff; --chart-border:#c9dce1;
+}
+html[data-kizuki-theme="light"] .recharts-default-tooltip,
+html[data-kizuki-theme="light"] .kizuki-scientific-chart .recharts-default-tooltip {
+ background:#ffffff !important;color:#19343c !important;border-color:#c9dce1 !important;
+}
+html[data-kizuki-theme="light"] .recharts-tooltip-label,
+html[data-kizuki-theme="light"] .kizuki-scientific-chart .recharts-tooltip-label {color:#19343c !important;}
+html[data-kizuki-theme="light"] .recharts-cartesian-axis-tick text,
+html[data-kizuki-theme="light"] .recharts-legend-item-text {fill:#526e79 !important;color:#526e79 !important;}
+html[data-kizuki-theme="light"] .recharts-cartesian-grid line {stroke:#d6e3e7 !important;}
+/* Exact dark-background utilities found in the supplied JSX. */
+html[data-kizuki-theme="light"] .bg-\[\#06121b\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#07111b\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#07111c\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#07131e\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#071521\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#081521\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#081522\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#081722\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#0a1926\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#0b1723\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#0c1825\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#0c1a28\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#0d1c29\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#0d1d2b\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#101820\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#101e2d\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#10202d\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#102533\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#102734\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#102b36\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#102b39\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#112331\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#152435\] {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .bg-\[\#19262d\] {background-color:#ffffff !important;}
+/* Lighten dark nested cards while preserving green action buttons. */
+html[data-kizuki-theme="light"] .bg-navy-950,
+html[data-kizuki-theme="light"] .bg-navy-900,
+html[data-kizuki-theme="light"] .bg-navy-800,
+html[data-kizuki-theme="light"] .bg-slate-950,
+html[data-kizuki-theme="light"] .bg-slate-900,
+html[data-kizuki-theme="light"] .bg-slate-800 {background-color:#ffffff !important;}
+html[data-kizuki-theme="light"] .text-emerald-400,
+html[data-kizuki-theme="light"] .text-emerald-300,
+html[data-kizuki-theme="light"] .text-emerald-glow {color:#087d69 !important;}
+html[data-kizuki-theme="light"] :is(main,section,article) :is(.text-slate-500,.text-slate-400,.text-gray-400) {color:#526e79 !important;}
+html[data-kizuki-theme="light"] .obs-action-primary {background:#087d69 !important;color:white !important;}
+html[data-kizuki-theme="light"] .obs-action-primary :is(span,svg) {color:white !important;}
+html[data-kizuki-theme="light"] .obs-select {background:white !important;color:#19343c !important;}
+html[data-kizuki-theme="light"] .leaflet-container .leaflet-control-attribution {background:rgba(255,255,255,.9);color:#19343c;}
+/* Do not recolor raster tiles, imagery, SVG plot fills or map overlays. */
