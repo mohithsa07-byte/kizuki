@@ -34,7 +34,7 @@ const BASEMAPS = {
   },
   dark: {
     label: 'Dark',
-    url: 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors',
     className: 'osm-dark',
   },
@@ -117,7 +117,7 @@ function buildInsights(monthly) {
 
     insights.push({
       title: 'Temperature pattern',
-      description: `${hottest.month} is the warmest month on average at ${hottest.temp} Â°C. ${coolest.month} is the coolest at ${coolest.temp} Â°C.`,
+      description: `${hottest.month} is the warmest month on average at ${hottest.temp} °C. ${coolest.month} is the coolest at ${coolest.temp} °C.`,
     })
   }
 
@@ -632,7 +632,7 @@ export default function Overview() {
                   Selected coordinates
                 </p>
                 <p className="mt-2 font-mono text-xs text-slate-300">
-                  {selection.lat.toFixed(4)}Â°, {selection.lng.toFixed(4)}Â°
+                  {selection.lat.toFixed(4)}°, {selection.lng.toFixed(4)}°
                 </p>
                 <button
                   type="button"
@@ -710,7 +710,7 @@ export default function Overview() {
               </p>
               <p>
                 <strong className="text-slate-200">Spatial resolution:</strong>{' '}
-                Approximately 0.5Â° Ã— 0.625Â° grid cells, around 50 km. These
+                Approximately 0.5° × 0.625° grid cells, around 50 km. These
                 values do not represent precise neighbourhood measurements.
               </p>
               <p>
@@ -740,21 +740,21 @@ export default function Overview() {
           <SectionHeading
             eyebrow="Environmental snapshot"
             title="Climate at a glance"
-            detail={loading ? 'Updating dataâ€¦' : 'Historical period average'}
+            detail={loading ? 'Updating data…' : 'Historical period average'}
           />
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Mean air temperature"
-              value={temperature !== null ? temperature : loading ? 'â€¦' : 'N/A'}
-              unit="Â°C"
+              value={temperature !== null ? temperature : loading ? '…' : 'N/A'}
+              unit="°C"
               description="Air temperature at 2 metres"
               status={summaryData ? 'NASA POWER' : 'Unavailable'}
             />
 
             <MetricCard
               label="Mean annual rainfall"
-              value={rainfall !== null ? rainfall : loading ? 'â€¦' : 'N/A'}
+              value={rainfall !== null ? rainfall : loading ? '…' : 'N/A'}
               unit="mm"
               description="Annualised precipitation"
               status={summaryData ? 'NASA POWER' : 'Unavailable'}
@@ -771,7 +771,7 @@ export default function Overview() {
               }
               description={
                 measuredNDVI != null
-                  ? `Point NDVI Â· ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
+                  ? `Point NDVI · ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
                   : overviewNDVI.loading
                     ? 'Loading Sentinel-2 observation'
                     : 'No valid 2024 point observation'
@@ -796,7 +796,7 @@ export default function Overview() {
               }
               description={
                 overviewAQI.value != null
-                  ? `${aqiCategory} Â· US AQI Â· ${overviewAQI.time || 'Current estimate'}`
+                  ? `${aqiCategory} · US AQI · ${overviewAQI.time || 'Current estimate'}`
                   : overviewAQI.loading
                     ? 'Loading air quality estimate'
                     : 'Air quality data unavailable'
@@ -836,7 +836,7 @@ export default function Overview() {
 
               {loading && (
                 <p className="py-12 text-center text-xs text-slate-500">
-                  Loading climate recordsâ€¦
+                  Loading climate records…
                 </p>
               )}
 
@@ -866,7 +866,7 @@ export default function Overview() {
 
               {loading && (
                 <p className="py-12 text-center text-xs text-slate-500">
-                  Loading yearly trendsâ€¦
+                  Loading yearly trends…
                 </p>
               )}
 
@@ -912,7 +912,7 @@ export default function Overview() {
             ) : (
               <div className="obs-research-panel p-5 text-sm text-slate-500">
                 {loading
-                  ? 'Analysing the selected climate recordsâ€¦'
+                  ? 'Analysing the selected climate records…'
                   : 'Insights will appear when climate records are available.'}
               </div>
             )}
@@ -922,7 +922,7 @@ export default function Overview() {
 
 
         <footer className="border-t border-white/[0.07] py-4 text-center text-[10px] tracking-wide text-slate-600">
-          KIZUKI Â· SEE THE CHANGE. UNDERSTAND THE CAUSE. PREDICT THE FUTURE.
+          KIZUKI · SEE THE CHANGE. UNDERSTAND THE CAUSE. PREDICT THE FUTURE.
         </footer>
       </div>
     </div>
