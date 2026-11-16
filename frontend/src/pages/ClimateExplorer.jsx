@@ -1,3 +1,4 @@
+import ReportGenerator from '../components/ReportGenerator'
 import SatelliteComparison from '../components/SatelliteComparison'
 import GlobalClimateHeatmap from '../components/GlobalClimateHeatmap'
 import { useEffect, useMemo, useState } from 'react'
@@ -604,6 +605,12 @@ export default function ClimateExplorer() {
             by themselves establish a long-term climate trend.
           </p>
         </Panel>
+
+        <ReportGenerator
+          location={location}
+          startYear={start}
+          endYear={end}
+        />
 
         <SatelliteComparison
           location={location}

@@ -31,3 +31,35 @@ export async function apiGet(path) {
 
   return response.json()
 }
+export async function downloadEnvironmentalReport(payload) {
+  const response = await fetch(`${BASE_URL}/api/reports/environmental`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    let message = `Report generation failed (${response.status})`
+    try {
+      const data = await response.json()
+      if (typeof data.detail === 'string') message = data.detail
+    } catch {
+      // Keep the HTTP error.
+    }
+    throw new Error(message)
+  }
+
+  const blob = await response.blob()
+  if (!blob.type.includes('pdf')) {
+    throw new Error('Backend did not return a PDF.')
+  }
+
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'kizuki-environmental-report.pdf'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 60000)
+}

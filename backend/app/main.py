@@ -48,3 +48,6 @@ def deployment_check():
 
 from app.routes import satellite_compare
 app.include_router(satellite_compare.router)
+
+from app.routes import reports
+app.include_router(reports.router)
