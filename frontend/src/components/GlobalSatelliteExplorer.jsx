@@ -365,6 +365,15 @@ export default function GlobalSatelliteExplorer({ onLocationChange }) {
                 maxNativeZoom={layer === 'terrain' ? 17 : 18}
                 className={layer === 'street' ? 'osm-dark' : ''}
               />
+
+              {layer === 'satellite' && (
+                <TileLayer
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                  attribution="Labels © Esri"
+                  pane="overlayPane"
+                  maxZoom={18}
+                />
+              )}
               {layer === 'satellite' &&
                 historicalOverlay &&
                 !overlayFailed && (
