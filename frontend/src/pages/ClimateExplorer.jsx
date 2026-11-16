@@ -384,7 +384,7 @@ export default function ClimateExplorer() {
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
           <div className="relative h-[430px] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1723] sm:h-[540px]">
                         {/* KIZUKI SENTINEL-2 SELECTOR */}
-            <div className="absolute bottom-4 left-4 z-[1000] rounded-xl border border-emerald-400/30 bg-[#071521]/95 p-3 shadow-xl">
+            <div className="absolute top-20 left-4 absolute   z-[1000] rounded-xl border border-emerald-400/30 bg-[#071521]/95 p-3 shadow-xl">
               <button
                 type="button"
                 onClick={() => setLayer(layer === 'sentinel-2' ? 'temperature' : 'sentinel-2')}
