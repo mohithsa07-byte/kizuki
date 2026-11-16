@@ -1,3 +1,4 @@
+import EnvironmentalInsights from '../components/EnvironmentalInsights'
 import OverviewHero from '../components/OverviewHero'
 
 import { useMemo, useState, useEffect } from 'react'
@@ -440,6 +441,11 @@ export default function Overview() {
 
         {/* Premium KIZUKI Overview */}
         <OverviewHero
+          selection={selection}
+          startYear={startYear}
+          endYear={endYear}
+        />
+        <EnvironmentalInsights
           selection={selection}
           startYear={startYear}
           endYear={endYear}

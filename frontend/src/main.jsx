@@ -11,3 +11,5 @@ createRoot(document.getElementById('root')).render(
 )
 
 import './observatory-overview.css'
+
+import './environmental-insights.css'
