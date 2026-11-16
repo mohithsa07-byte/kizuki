@@ -127,3 +127,59 @@ html[data-kizuki-theme="light"] .leaflet-container { background:#e6eef0; }
 html[data-kizuki-theme="light"] .osm-dark { filter:none !important; }
 html[data-kizuki-theme="light"] .kizuki-bottom-link { color:#55717d; }
 html[data-kizuki-theme="light"] .kizuki-bottom-link-active { color:#087c65; background:#e0f3ec; }
+
+
+/* KIZUKI LIGHT PANELS V3 */
+/* Explicit light-mode surfaces; leave Leaflet tiles and chart canvases untouched. */
+html[data-kizuki-theme="light"] {
+ --k-surface:#ffffff; --k-surface-soft:#f0f6f7;
+ --k-text:#19323b; --k-subtext:#536c78; --k-outline:#d4e2e6;
+}
+html[data-kizuki-theme="light"] :is(main,section,article) :is(section,article),
+html[data-kizuki-theme="light"] main > section,
+html[data-kizuki-theme="light"] .glass-panel,
+html[data-kizuki-theme="light"] .glass-panel-strong {
+ background-color:var(--k-surface) !important;
+ color:var(--k-text) !important;
+ border-color:var(--k-outline) !important;
+ box-shadow:0 5px 20px rgba(20,55,67,.045) !important;
+}
+/* Dark Tailwind arbitrary backgrounds, including colors that aren't named navy/slate. */
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-[#0"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-[#1"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-[#2"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-[rgb(1"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-[rgba(1"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-slate-9"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-gray-9"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-zinc-9"],
+html[data-kizuki-theme="light"] :is(main,section,article,div)[class*="bg-navy-"] {
+ background-color:var(--k-surface) !important;
+ color:var(--k-text);
+}
+/* Inner information cards should have a subtle distinction from their parent. */
+html[data-kizuki-theme="light"] :is(section,article) :is(div,section,article)[class*="bg-white/"],
+html[data-kizuki-theme="light"] :is(section,article) :is(div,section,article)[class*="bg-slate-8"],
+html[data-kizuki-theme="light"] :is(section,article) :is(div,section,article)[class*="bg-navy-800"] {
+ background-color:var(--k-surface-soft) !important;
+}
+/* The time-control and methodology panels can be plain divs with inline dark backgrounds. */
+html[data-kizuki-theme="light"] main :is(section,article,div)[style*="background-color: rgb(1"],
+html[data-kizuki-theme="light"] main :is(section,article,div)[style*="background-color: rgb(2"],
+html[data-kizuki-theme="light"] main :is(section,article,div)[style*="background: rgb(1"],
+html[data-kizuki-theme="light"] main :is(section,article,div)[style*="background: rgb(2"] {
+ background-color:var(--k-surface) !important;
+}
+/* Ensure headings and paragraphs on light surfaces don't inherit dark-mode ink. */
+html[data-kizuki-theme="light"] main :is(h1,h2,h3,h4,h5,h6) { color:var(--k-text) !important; }
+html[data-kizuki-theme="light"] main :is(p,li,dd,dt,label,small) { color:var(--k-subtext); }
+html[data-kizuki-theme="light"] main :is(p,li,dd,dt,label,small)[class*="text-white"],
+html[data-kizuki-theme="light"] main :is(p,li,dd,dt,label,small)[class*="text-slate-100"] { color:var(--k-text) !important; }
+html[data-kizuki-theme="light"] main :is(div,span)[class*="text-[#0"],
+html[data-kizuki-theme="light"] main :is(div,span)[class*="text-[#1"] { color:var(--k-text) !important; }
+html[data-kizuki-theme="light"] main :is(input,select,textarea) {
+ background:#fff !important; color:var(--k-text) !important;
+ border-color:#b8cdd3 !important;
+}
+/* Keep visualizations and map content untouched. */
+html[data-kizuki-theme="light"] .leaflet-container :is(.leaflet-tile-pane,.leaflet-overlay-pane) { filter:none; }
