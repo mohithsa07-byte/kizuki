@@ -47,7 +47,7 @@ export default function ForecastWorldMap({
         className="h-full w-full"
       >
         <TileLayer
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution="© OpenStreetMap contributors"
         />
 

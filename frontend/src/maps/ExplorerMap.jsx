@@ -1,4 +1,4 @@
-﻿import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
 
 function valueRange(places, key) {
   const values = places.map((p) => p[key])
@@ -13,7 +13,7 @@ export default function ExplorerMap({ center, places, layer, selectedId, onSelec
       <MapContainer center={center} zoom={11} scrollWheelZoom className="h-full w-full">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         {places.map((p) => {
           const t = max === min ? 0.5 : (p[layer.id] - min) / (max - min)
