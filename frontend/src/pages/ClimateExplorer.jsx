@@ -191,7 +191,7 @@ export default function ClimateExplorer() {
       : null
 
   const chartKey = layer === 'temperature' ? 'temp' : 'rain'
-  const chartUnit = layer === 'temperature' ? 'Â°C' : 'mm'
+  const chartUnit = layer === 'temperature' ? 'Ã‚Â°C' : 'mm'
 
   const sourceLabel = climate.data?.is_sample
     ? 'Sample dataset'
@@ -243,7 +243,7 @@ export default function ClimateExplorer() {
 
           {layer === 'sea-ice' && (
           <Panel>
-            <p className="text-sm font-semibold text-white">Sea ice concentration Â· satellite visualization</p>
+            <p className="text-sm font-semibold text-white">Sea ice concentration Ã‚Â· satellite visualization</p>
             <p className="mt-2 text-xs leading-6 text-slate-400">
               The map requests a NASA GIBS AMSR2 sea ice concentration image for the selected year.
               Arctic observations use September 15; Antarctic observations use February 15.
@@ -368,8 +368,8 @@ export default function ClimateExplorer() {
               <label className="space-y-2">
                 <span className="text-xs text-slate-400">Polar region</span>
                 <select className={SELECT_STYLE} value={hemisphere} onChange={e => setHemisphere(e.target.value)}>
-                  <option value="arctic">Arctic Â· September</option>
-                  <option value="antarctic">Antarctic Â· February</option>
+                  <option value="arctic">Arctic Ã‚Â· September</option>
+                  <option value="antarctic">Antarctic Ã‚Â· February</option>
                 </select>
               </label>
             )}
@@ -401,8 +401,8 @@ export default function ClimateExplorer() {
                 }
                 attribution={
                   basemap === 'satellite'
-                    ? 'Tiles Â© Esri'
-                    : 'Â© OpenStreetMap contributors'
+                    ? 'Tiles Ã‚Â© Esri'
+                    : 'Ã‚Â© OpenStreetMap contributors'
                 }
                 className=''
               />
@@ -416,7 +416,7 @@ export default function ClimateExplorer() {
                   layers="MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day"
                   format="image/png" transparent opacity={0.82}
                   version="1.1.1" time={`${year}-07-15`}
-                  attribution="NASA GIBS Â· MODIS Terra July daytime LST"
+                  attribution="NASA GIBS Ã‚Â· MODIS Terra July daytime LST"
                 />
               )}
 
@@ -434,6 +434,13 @@ export default function ClimateExplorer() {
                 />
               )}
 
+              {/* KIZUKI GEOGRAPHICAL LABELS */}
+              <TileLayer
+                url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                attribution="Labels © Esri"
+                opacity={1}
+                zIndex={450}
+              />
               <ZoomControl position="bottomright" />
 
               <MapEvents onSelect={setLocation} />
@@ -535,23 +542,23 @@ export default function ClimateExplorer() {
                   <div className="space-y-2 text-[11px]">
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-sm bg-slate-600"/>
-                      <span>0% — Open water</span>
+                      <span>0% â€” Open water</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-sm bg-slate-500"/>
-                      <span>1–14% — Sparse ice</span>
+                      <span>1â€“14% â€” Sparse ice</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-sm bg-slate-400"/>
-                      <span>15–49% — Partial ice cover</span>
+                      <span>15â€“49% â€” Partial ice cover</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-sm bg-slate-300"/>
-                      <span>50–79% — Substantial ice cover</span>
+                      <span>50â€“79% â€” Substantial ice cover</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-sm bg-white"/>
-                      <span>80–100% — Dense ice cover</span>
+                      <span>80â€“100% â€” Dense ice cover</span>
                     </div>
                   </div>
 
@@ -598,7 +605,7 @@ export default function ClimateExplorer() {
             </div>
             <div className="pointer-events-none absolute right-4 top-4 z-[500] max-w-[220px] rounded-xl border border-white/10 bg-[#071521]/90 px-3 py-2 backdrop-blur-xl">
               <p className="text-xs font-semibold text-white">
-                {layer === 'temperature' ? `Satellite surface temperature Â· July ${year}` : layer === 'sea-ice' ? `Sea ice concentration Â· ${hemisphere === 'arctic' ? 'September' : 'February'} ${year}` : `Annual rainfall Â· ${year}`}
+                {layer === 'temperature' ? `Satellite surface temperature Ã‚Â· July ${year}` : layer === 'sea-ice' ? `Sea ice concentration Ã‚Â· ${hemisphere === 'arctic' ? 'September' : 'February'} ${year}` : `Annual rainfall Ã‚Â· ${year}`}
               </p>
               <p className="mt-1 text-[11px] leading-4 text-slate-300">
                 {layer === 'temperature'
@@ -653,17 +660,17 @@ export default function ClimateExplorer() {
             <div className="mt-7 space-y-5">
               <div className="border-b border-white/10 pb-5">
                 <p className="text-xs text-slate-400">
-                  Mean air temperature Â· {year}
+                  Mean air temperature Ã‚Â· {year}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-white">
                   {climate.loading ? '...' : display(current?.temp, 2)}
-                  <span className="ml-2 text-sm text-emerald-300">Â°C</span>
+                  <span className="ml-2 text-sm text-emerald-300">Ã‚Â°C</span>
                 </p>
               </div>
 
               <div className="border-b border-white/10 pb-5">
                 <p className="text-xs text-slate-400">
-                  Annual precipitation Â· {year}
+                  Annual precipitation Ã‚Â· {year}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-white">
                   {climate.loading ? '...' : display(current?.rain)}
@@ -696,15 +703,15 @@ export default function ClimateExplorer() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Metric
             icon={Thermometer}
-            title={`Temperature Â· ${year}`}
+            title={`Temperature Ã‚Â· ${year}`}
             value={climate.loading ? '...' : display(current?.temp, 2)}
-            unit="Â°C"
+            unit="Ã‚Â°C"
             detail="Annual mean air temperature at 2 metres"
           />
 
           <Metric
             icon={CloudRain}
-            title={`Rainfall Â· ${year}`}
+            title={`Rainfall Ã‚Â· ${year}`}
             value={climate.loading ? '...' : display(current?.rain)}
             unit="mm"
             detail="Total precipitation over the calendar year"
@@ -720,7 +727,7 @@ export default function ClimateExplorer() {
                   ? 'N/A'
                   : `${tempChange > 0 ? '+' : ''}${tempChange.toFixed(2)}`
             }
-            unit="Â°C"
+            unit="Ã‚Â°C"
             detail={`${year} minus ${compareYear}`}
           />
 
@@ -753,7 +760,7 @@ export default function ClimateExplorer() {
                     : 'Annual precipitation trend'}
               </h2>
               <p className="mt-2 text-xs text-slate-400">
-                {location.name} Â· {start}â€“{end}
+                {location.name} Ã‚Â· {start}Ã¢â‚¬â€œ{end}
               </p>
             </div>
 
@@ -847,7 +854,7 @@ export default function ClimateExplorer() {
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 py-5">
           <p className="text-xs text-slate-500">
-            KIZUKI Â· See the change. Understand the cause.
+            KIZUKI Ã‚Â· See the change. Understand the cause.
           </p>
           <Link
             to="/vegetation"
