@@ -1,4 +1,4 @@
-﻿# KIZUKI
+# KIZUKI
 
 See the change. Understand the cause. Predict the future.
 
@@ -173,3 +173,41 @@ KIZUKI aims to make climate and environmental data easier to explore, compare, a
 **KIZUKI — See the change. Understand the cause.**
 
 <!-- KIZUKI FEATURES END -->
+
+## Satellite and Climate Data Sources
+
+KIZUKI integrates multiple Earth-observation and climate datasets to support environmental exploration and visualization.
+
+| Source | Application |
+|---|---|
+| NASA POWER | Historical temperature and rainfall data |
+| NASA MODIS (Terra) | Land-surface temperature and vegetation monitoring |
+| NASA GIBS | Satellite imagery overlays through WMS |
+| JAXA GCOM-W1 / AMSR2 | Sea ice concentration visualization |
+| NSIDC | Historical Arctic and Antarctic sea ice extent |
+| Copernicus Sentinel-2 / EOX | High-resolution, Sentinel-2-derived cloudless satellite imagery |
+
+### Sentinel-2 Integration
+
+KIZUKI includes a Sentinel-2 imagery option in Climate Explorer.
+
+- Displays a true-colour cloudless mosaic derived from Copernicus Sentinel-2 observations.
+- Uses the EOX WMS imagery service.
+- Allows users to switch between Sentinel-2 imagery and other climate map layers.
+- Supports geographical exploration using the existing React Leaflet interface.
+
+**Data clarification:** The EOX cloudless mosaic is not equivalent to a date-specific Sentinel-2 Level-2A scene. Date-specific L2A imagery in the comparison workflow should only be claimed after its implementation has been verified.
+
+## Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | JavaScript, React, JSX, Vite |
+| Styling | Tailwind CSS |
+| Backend | Python, FastAPI |
+| Mapping | Leaflet, React Leaflet |
+| Visualizations | Recharts |
+| Satellite Imagery | NASA GIBS WMS, Copernicus Sentinel-2 / EOX |
+| Climate Data | NASA POWER, MODIS, NSIDC |
+| Deployment | Vercel |
+| Version Control | Git, GitHub |
