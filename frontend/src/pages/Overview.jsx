@@ -445,103 +445,14 @@ export default function Overview() {
     <div className="obs-overview min-h-screen bg-[#101820] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px] space-y-6">
 
-        {/* Premium KIZUKI Overview */}
+                {/* Premium KIZUKI Overview */}
         <OverviewHero
           selection={selection}
           startYear={startYear}
           endYear={endYear}
         />
-        <EnvironmentalInsights
-          selection={selection}
-          startYear={startYear}
-          endYear={endYear}
-        />
 
-        {/* Error message */}
-        {error && (
-          <div className="rounded-xl border border-red-400/20 bg-red-400/[0.07] p-4 text-sm text-red-200">
-            Could not load climate data: {error}
-          </div>
-        )}
-
-        {/* Main metrics */}
-        <section>
-          <SectionHeading
-            eyebrow="Environmental snapshot"
-            title="Climate at a glance"
-            detail={loading ? 'Updating dataâ€¦' : 'Historical period average'}
-          />
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Mean air temperature"
-              value={temperature !== null ? temperature : loading ? 'â€¦' : 'N/A'}
-              unit="Â°C"
-              description="Air temperature at 2 metres"
-              status={summaryData ? 'NASA POWER' : 'Unavailable'}
-            />
-
-            <MetricCard
-              label="Mean annual rainfall"
-              value={rainfall !== null ? rainfall : loading ? 'â€¦' : 'N/A'}
-              unit="mm"
-              description="Annualised precipitation"
-              status={summaryData ? 'NASA POWER' : 'Unavailable'}
-            />
-
-                        <MetricCard
-              label="Vegetation index"
-              value={
-                overviewNDVI.loading
-                  ? '...'
-                  : measuredNDVI != null
-                    ? Number(measuredNDVI).toFixed(4)
-                    : 'N/A'
-              }
-              description={
-                measuredNDVI != null
-                  ? `Point NDVI Â· ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
-                  : overviewNDVI.loading
-                    ? 'Loading Sentinel-2 observation'
-                    : 'No valid 2024 point observation'
-              }
-              status={
-                measuredNDVI != null
-                  ? 'Sentinel-2'
-                  : overviewNDVI.loading
-                    ? 'Loading'
-                    : 'Unavailable'
-              }
-            />
-
-                        <MetricCard
-              label="Air quality index"
-              value={
-                overviewAQI.loading
-                  ? '...'
-                  : overviewAQI.value != null
-                    ? Math.round(overviewAQI.value)
-                    : 'N/A'
-              }
-              description={
-                overviewAQI.value != null
-                  ? `${aqiCategory} Â· US AQI Â· ${overviewAQI.time || 'Current estimate'}`
-                  : overviewAQI.loading
-                    ? 'Loading air quality estimate'
-                    : 'Air quality data unavailable'
-              }
-              status={
-                overviewAQI.value != null
-                  ? 'Open-Meteo'
-                  : overviewAQI.loading
-                    ? 'Loading'
-                    : 'Unavailable'
-              }
-            />
-          </div>
-        </section>
-
-        {/* Map and region controls */}
+{/* Map and region controls */}
         <section>
           <SectionHeading
             eyebrow="Geospatial intelligence"
@@ -735,114 +646,7 @@ export default function Overview() {
           </div>
         </section>
 
-        {/* Historical analytics */}
-        <section>
-          <SectionHeading
-            eyebrow="Historical climate records"
-            title="Patterns over time"
-            detail="Monthly averages and yearly trends"
-          />
-
-          <div className="grid gap-4 xl:grid-cols-2">
-            <div className="min-w-0 obs-research-panel p-4 sm:p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-semibold text-white">
-                    Monthly climate profile
-                  </h3>
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    Average temperature and rainfall by month
-                  </p>
-                </div>
-                <StatusTag>NASA POWER</StatusTag>
-              </div>
-
-              {loading && (
-                <p className="py-12 text-center text-xs text-slate-500">
-                  Loading climate recordsâ€¦
-                </p>
-              )}
-
-              {!loading && charts && (
-                <ClimateChart data={charts.monthly} />
-              )}
-
-              {!loading && !charts && (
-                <p className="py-12 text-center text-xs text-slate-500">
-                  No climate records available for this selection.
-                </p>
-              )}
-            </div>
-
-            <div className="min-w-0 obs-research-panel p-4 sm:p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-semibold text-white">
-                    Annual temperature trend
-                  </h3>
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    Mean temperature for complete calendar years
-                  </p>
-                </div>
-                <StatusTag>NASA POWER</StatusTag>
-              </div>
-
-              {loading && (
-                <p className="py-12 text-center text-xs text-slate-500">
-                  Loading yearly trendsâ€¦
-                </p>
-              )}
-
-              {!loading && charts?.yearly.length > 0 && (
-                <TrendChart data={charts.yearly} />
-              )}
-
-              {!loading && charts?.yearly.length === 0 && (
-                <p className="py-12 text-center text-xs text-slate-500">
-                  No complete years available in this date range.
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Insights */}
-        <section>
-          <SectionHeading
-            eyebrow="Data interpretation"
-            title="What the records reveal"
-            detail="Automatically derived from the selected period"
-          />
-
-          <div className="grid gap-3 md:grid-cols-2">
-            {insights.length ? (
-              insights.map((insight) => (
-                <div
-                  key={insight.title}
-                  className="obs-research-panel p-5"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#79b7a5]" />
-                    <h3 className="text-sm font-semibold text-white">
-                      {insight.title}
-                    </h3>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-400">
-                    {insight.description}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <div className="obs-research-panel p-5 text-sm text-slate-500">
-                {loading
-                  ? 'Analysing the selected climate recordsâ€¦'
-                  : 'Insights will appear when climate records are available.'}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Period and methodology */}
+{/* Period and methodology */}
         <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <div className="obs-research-panel p-5">
             <SectionHeading
@@ -917,6 +721,205 @@ export default function Overview() {
             </div>
           </div>
         </section>
+
+<EnvironmentalInsights
+          selection={selection}
+          startYear={startYear}
+          endYear={endYear}
+        />
+
+{/* Error message */}
+        {error && (
+          <div className="rounded-xl border border-red-400/20 bg-red-400/[0.07] p-4 text-sm text-red-200">
+            Could not load climate data: {error}
+          </div>
+        )}
+
+{/* Main metrics */}
+        <section>
+          <SectionHeading
+            eyebrow="Environmental snapshot"
+            title="Climate at a glance"
+            detail={loading ? 'Updating dataâ€¦' : 'Historical period average'}
+          />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Mean air temperature"
+              value={temperature !== null ? temperature : loading ? 'â€¦' : 'N/A'}
+              unit="Â°C"
+              description="Air temperature at 2 metres"
+              status={summaryData ? 'NASA POWER' : 'Unavailable'}
+            />
+
+            <MetricCard
+              label="Mean annual rainfall"
+              value={rainfall !== null ? rainfall : loading ? 'â€¦' : 'N/A'}
+              unit="mm"
+              description="Annualised precipitation"
+              status={summaryData ? 'NASA POWER' : 'Unavailable'}
+            />
+
+                        <MetricCard
+              label="Vegetation index"
+              value={
+                overviewNDVI.loading
+                  ? '...'
+                  : measuredNDVI != null
+                    ? Number(measuredNDVI).toFixed(4)
+                    : 'N/A'
+              }
+              description={
+                measuredNDVI != null
+                  ? `Point NDVI Â· ${overviewNDVI.data.scene_date?.slice(0, 10) || '2024'}`
+                  : overviewNDVI.loading
+                    ? 'Loading Sentinel-2 observation'
+                    : 'No valid 2024 point observation'
+              }
+              status={
+                measuredNDVI != null
+                  ? 'Sentinel-2'
+                  : overviewNDVI.loading
+                    ? 'Loading'
+                    : 'Unavailable'
+              }
+            />
+
+                        <MetricCard
+              label="Air quality index"
+              value={
+                overviewAQI.loading
+                  ? '...'
+                  : overviewAQI.value != null
+                    ? Math.round(overviewAQI.value)
+                    : 'N/A'
+              }
+              description={
+                overviewAQI.value != null
+                  ? `${aqiCategory} Â· US AQI Â· ${overviewAQI.time || 'Current estimate'}`
+                  : overviewAQI.loading
+                    ? 'Loading air quality estimate'
+                    : 'Air quality data unavailable'
+              }
+              status={
+                overviewAQI.value != null
+                  ? 'Open-Meteo'
+                  : overviewAQI.loading
+                    ? 'Loading'
+                    : 'Unavailable'
+              }
+            />
+          </div>
+        </section>
+
+{/* Historical analytics */}
+        <section>
+          <SectionHeading
+            eyebrow="Historical climate records"
+            title="Patterns over time"
+            detail="Monthly averages and yearly trends"
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <div className="min-w-0 obs-research-panel p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Monthly climate profile
+                  </h3>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Average temperature and rainfall by month
+                  </p>
+                </div>
+                <StatusTag>NASA POWER</StatusTag>
+              </div>
+
+              {loading && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  Loading climate recordsâ€¦
+                </p>
+              )}
+
+              {!loading && charts && (
+                <ClimateChart data={charts.monthly} />
+              )}
+
+              {!loading && !charts && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  No climate records available for this selection.
+                </p>
+              )}
+            </div>
+
+            <div className="min-w-0 obs-research-panel p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Annual temperature trend
+                  </h3>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Mean temperature for complete calendar years
+                  </p>
+                </div>
+                <StatusTag>NASA POWER</StatusTag>
+              </div>
+
+              {loading && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  Loading yearly trendsâ€¦
+                </p>
+              )}
+
+              {!loading && charts?.yearly.length > 0 && (
+                <TrendChart data={charts.yearly} />
+              )}
+
+              {!loading && charts?.yearly.length === 0 && (
+                <p className="py-12 text-center text-xs text-slate-500">
+                  No complete years available in this date range.
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+{/* Insights */}
+        <section>
+          <SectionHeading
+            eyebrow="Data interpretation"
+            title="What the records reveal"
+            detail="Automatically derived from the selected period"
+          />
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {insights.length ? (
+              insights.map((insight) => (
+                <div
+                  key={insight.title}
+                  className="obs-research-panel p-5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#79b7a5]" />
+                    <h3 className="text-sm font-semibold text-white">
+                      {insight.title}
+                    </h3>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">
+                    {insight.description}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="obs-research-panel p-5 text-sm text-slate-500">
+                {loading
+                  ? 'Analysing the selected climate recordsâ€¦'
+                  : 'Insights will appear when climate records are available.'}
+              </div>
+            )}
+          </div>
+        </section>
+
+
 
         <footer className="border-t border-white/[0.07] py-4 text-center text-[10px] tracking-wide text-slate-600">
           KIZUKI Â· SEE THE CHANGE. UNDERSTAND THE CAUSE. PREDICT THE FUTURE.
