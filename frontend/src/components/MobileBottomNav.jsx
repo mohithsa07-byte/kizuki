@@ -11,7 +11,7 @@ const items = [
   { path: '/', label: 'Home', icon: House },
   { path: '/explorer', label: 'Explore', icon: Globe2 },
   { path: '/vegetation', label: 'NDVI', icon: Leaf },
-  { path: '/forecast', label: 'Forecast', icon: ChartNoAxesCombined },
+  { path: '/forecast', label: 'Projection Lab', icon: ChartNoAxesCombined },
   { path: '/analyst', label: 'AI', icon: BrainCircuit }
 ]
 
