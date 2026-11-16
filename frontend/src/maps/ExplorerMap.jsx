@@ -13,7 +13,7 @@ export default function ExplorerMap({ center, places, layer, selectedId, onSelec
       <MapContainer center={center} zoom={11} scrollWheelZoom className="h-full w-full">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {places.map((p) => {
           const t = max === min ? 0.5 : (p[layer.id] - min) / (max - min)

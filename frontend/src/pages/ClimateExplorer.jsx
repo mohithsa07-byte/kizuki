@@ -345,7 +345,7 @@ export default function ClimateExplorer() {
                     ? 'Tiles © Esri'
                     : '© OpenStreetMap contributors'
                 }
-                className={basemap === 'dark' ? 'osm-dark' : ''}
+                className=''
               />
 
               <ZoomControl position="bottomright" />
