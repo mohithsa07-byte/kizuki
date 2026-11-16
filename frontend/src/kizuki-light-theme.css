@@ -272,3 +272,36 @@ html[data-kizuki-theme="light"] .obs-action-primary :is(span,svg) {color:white !
 html[data-kizuki-theme="light"] .obs-select {background:white !important;color:#19343c !important;}
 html[data-kizuki-theme="light"] .leaflet-container .leaflet-control-attribution {background:rgba(255,255,255,.9);color:#19343c;}
 /* Do not recolor raster tiles, imagery, SVG plot fills or map overlays. */
+
+/* KIZUKI LIGHT HEADER PANELS V5 */
+/* All main page hero/header panels share these Tailwind utility classes. */
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br {
+  background: linear-gradient(120deg, #ffffff 0%, #f2f8f7 100%) !important;
+  background-image: linear-gradient(120deg, #ffffff 0%, #f2f8f7 100%) !important;
+  border-color: #d5e5e3 !important;
+  color: #18343b !important;
+  box-shadow: 0 8px 28px rgba(26, 61, 67, .055) !important;
+}
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br h1,
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br h2 {
+  color: #19343c !important;
+  -webkit-text-fill-color: #19343c !important;
+}
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br p:not([class*="uppercase"]) {
+  color: #536f79 !important;
+}
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br p[class*="uppercase"] {
+  color: #087d69 !important;
+}
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br a,
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br span[class*="rounded-full"] {
+  color: #087d69 !important;
+  background-color: #e7f4f0 !important;
+  border-color: #bcded5 !important;
+}
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br a:hover {
+  background-color: #d5ebe4 !important;
+}
+html[data-kizuki-theme="light"] section.rounded-3xl.bg-gradient-to-br > div.pointer-events-none {
+  opacity: .35 !important;
+}
