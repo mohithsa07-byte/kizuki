@@ -26,7 +26,7 @@ const LAYERS = {
   },
   street: {
     label: 'Street',
-    url: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: 'Â© OpenStreetMap contributors'
   }
 }

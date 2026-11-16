@@ -34,7 +34,7 @@ const BASEMAPS = {
   },
   dark: {
     label: 'Dark',
-    url: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors',
     className: 'osm-dark',
   },

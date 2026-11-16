@@ -49,7 +49,7 @@ function WorldMap({ location, onPick }) {
         className="h-full w-full"
       >
         <TileLayer
-          url="https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="© OpenStreetMap contributors"
         />
         <MapPicker onPick={onPick} />
