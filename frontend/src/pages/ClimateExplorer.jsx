@@ -1,4 +1,5 @@
-﻿import ReportGenerator from '../components/ReportGenerator'
+﻿import SeaIceTrends from '../components/SeaIceTrends'
+import ReportGenerator from '../components/ReportGenerator'
 import SatelliteComparison from '../components/SatelliteComparison'
 import GlobalClimateHeatmap from '../components/GlobalClimateHeatmap'
 import { useEffect, useMemo, useState } from 'react'
@@ -762,6 +763,10 @@ export default function ClimateExplorer() {
           </p>
         </Panel>
 
+        <SeaIceTrends
+          year={year}
+          compareYear={compareYear}
+        />
         <ReportGenerator
           location={location}
           startYear={start}
@@ -792,4 +797,5 @@ export default function ClimateExplorer() {
     </div>
   )
 }
+
 
